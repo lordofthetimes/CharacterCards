@@ -1,0 +1,73 @@
+name: CharacterCard
+version: '1.0-SNAPSHOT'
+main: net.lordofthetimes.characterCard.CharacterCard
+api-version: '1.21'
+commands:
+  character:
+    description: Manage your character card or see character cards of other players!
+    aliases: profile
+    usage: /character
+    permission: charactercard.character
+
+permissions:
+  charactercard.character:
+    description: "Allows using the base character command"
+    default: true
+
+  charactercard.character.*:
+    description: "Allows all character-related permissions"
+    default: op
+    children:
+      charactercard.character.book.*: true
+      charactercard.character.chat.*: true
+      charactercard.character.set.*: true
+
+  # BOOK
+  charactercard.character.book.*:
+    description: "Allows all book-related character card actions"
+    default: op
+    children:
+      charactercard.character.book.self: true
+      charactercard.character.book.others: true
+
+  charactercard.character.book.self:
+    description: "Allows opening your own character card as a book"
+    default: true
+
+  charactercard.character.book.others:
+    description: "Allows opening other players' character cards as a book"
+    default: true
+
+  # CHAT
+  charactercard.character.chat.*:
+    description: "Allows all chat-related character card actions"
+    default: op
+    children:
+      charactercard.character.chat.self: true
+      charactercard.character.chat.others: true
+
+  charactercard.character.chat.self:
+    description: "Allows opening your own character card in chat"
+    default: true
+
+  charactercard.character.chat.others:
+    description: "Allows opening others' character cards in chat"
+    default: true
+
+  # SET
+  charactercard.character.set.*:
+    description: "Allows all character card editing actions"
+    default: op
+    children:
+      charactercard.character.set.self: true
+      charactercard.character.set.others: true
+
+  charactercard.character.set.self:
+    description: "Allows editing your own character card"
+    default: true
+
+  charactercard.character.set.others:
+    description: "Allows editing other players' character cards"
+    default: false
+
+
