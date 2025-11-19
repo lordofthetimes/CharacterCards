@@ -54,20 +54,12 @@ permissions:
     description: "Allows opening others' character cards in chat"
     default: true
 
-  # SET
-  charactercard.character.set.*:
-    description: "Allows all character card editing actions"
-    default: op
-    children:
-      charactercard.character.set.self: true
-      charactercard.character.set.others: true
-
-  charactercard.character.set.self:
+  charactercard.character.set:
     description: "Allows editing your own character card"
     default: true
 
-  charactercard.character.set.others:
-    description: "Allows editing other players' character cards"
-    default: false
+  charactercard.character.clear:
+    description: "Allows clearing character data of players"
+    default: op
 
 

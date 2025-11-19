@@ -4,8 +4,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.*;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -13,6 +15,21 @@ public class DatabaseManager {
     private final JavaPlugin plugin;
     private final Logger logger;
     private Connection connection;
+
+    private final ConcurrentHashMap<UUID, ConcurrentHashMap<String,String>> playerDataCache = new ConcurrentHashMap<>();
+
+    public void addPlayerDataCache(UUID uuid, ConcurrentHashMap<String,String> data){
+        playerDataCache.put(uuid,data);
+    }
+
+    public void removePlayerDataCache(UUID uuid){
+        playerDataCache.remove(uuid);
+    }
+
+    public ConcurrentHashMap<String,String> getPlayerDataCache(UUID uuid){
+        return playerDataCache.get(uuid);
+    }
+
 
     public DatabaseManager(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -67,17 +84,19 @@ public class DatabaseManager {
             return null;
         });
     }
-
-    public CompletableFuture<List<String>> getPlayerData(UUID uuid){
+    public CompletableFuture<ConcurrentHashMap<String,String>> getPlayerData(UUID uuid){
         return CompletableFuture.supplyAsync(() ->{
-
+            ConcurrentHashMap<String,String> result = new ConcurrentHashMap<>(2);
+            result.put("lore", "null");
+            result.put("loreName", "null");
             String sql = "SELECT loreName,lore FROM characters WHERE uuid = ? LIMIT 1";
 
             try (PreparedStatement query = connection.prepareStatement(sql)){
                 query.setString(1,uuid.toString());
                 try (ResultSet rs = query.executeQuery()) {
                     if (rs.next()) {
-                        return List.of(rs.getString("loreName"),rs.getString("lore"));
+                        result.put("lore",rs.getString("lore"));
+                        result.put("loreName",rs.getString("loreName"));
                     }
                 }
 
@@ -85,7 +104,7 @@ public class DatabaseManager {
                 logger.log(Level.SEVERE, "Failed to fetch player data from characters for uuid "+ uuid.toString() + " : ", e);
             }
 
-            return null;
+            return result;
         });
     }
 
@@ -95,6 +114,10 @@ public class DatabaseManager {
 
             try(PreparedStatement query = connection.prepareStatement(sql)){
                 query.setString(1,uuid.toString());
+                query.setString(2,"Name not set");
+                query.setString(3,"Lore not set");
+                query.setString(4,"false");
+
                 return query.executeUpdate() > 0;
             } catch (SQLException e){
                 logger.log(Level.SEVERE,"Failed to insert data in characters for uuid "+ uuid.toString() + " : ", e);
@@ -111,6 +134,49 @@ public class DatabaseManager {
                 query.executeUpdate();
             } catch (SQLException e) {
                 logger.log(Level.SEVERE, "Failed to UPDATE bookData from characters for uuid "+ uuid.toString() + " : ", e);
+            }
+        });
+    }
+
+    public CompletableFuture<Boolean> updateLore(String lore, UUID uuid){
+        return CompletableFuture.supplyAsync(() ->{
+            try {
+                ConcurrentHashMap<String,String> data = getPlayerDataCache(uuid);
+                if (data == null) {
+                    throw new IllegalStateException("Cache missing for UUID: " + uuid);
+                }
+                data.replace("lore", lore);
+
+                String sql = "UPDATE characters SET lore = ? WHERE uuid = ?";
+                try (PreparedStatement query = connection.prepareStatement(sql)){
+                    query.setString(1, lore);
+                    query.setString(2, uuid.toString());
+                    return query.executeUpdate() > 0;
+                }
+            } catch (Exception e) {
+                plugin.getLogger().log(Level.SEVERE, "Async updateLore failed for uuid " + uuid, e);
+                return false;
+            }
+        });
+    }
+    public CompletableFuture<Boolean> updateName(String name, UUID uuid){
+        return CompletableFuture.supplyAsync(() ->{
+            try {
+                ConcurrentHashMap<String,String> data = getPlayerDataCache(uuid);
+                if (data == null) {
+                    throw new IllegalStateException("Cache missing for UUID: " + uuid);
+                }
+                data.replace("loreName", name);
+
+                String sql = "UPDATE characters SET loreName = ? WHERE uuid = ?";
+                try (PreparedStatement query = connection.prepareStatement(sql)){
+                    query.setString(1, name);
+                    query.setString(2, uuid.toString());
+                    return query.executeUpdate() > 0;
+                }
+            } catch (Exception e) {
+                plugin.getLogger().log(Level.SEVERE, "Async updateName failed for uuid " + uuid, e);
+                return false;
             }
         });
     }

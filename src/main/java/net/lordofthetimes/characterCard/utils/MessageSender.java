@@ -7,6 +7,12 @@ import java.util.Set;
 
 public class MessageSender {
 
+
+    public static void sendMissingSubCommand(CommandSender sender, Set<String> commands){
+        sendMessage(sender,"<red>Missing subcommand!</red> <gold>Available:</gold> <yellow>" +
+                String.join(", ", commands) + "</yellow>");
+    }
+
     public static void sendUsageMessage(CommandSender sender, Set<String> commands){
         sendMessage(sender,"<red>Unknown subcommand!</red> <gold>Available:</gold> <yellow>" +
                 String.join(", ", commands) + "</yellow>");
