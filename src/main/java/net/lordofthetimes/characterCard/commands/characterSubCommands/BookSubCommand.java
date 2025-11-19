@@ -1,6 +1,7 @@
 package net.lordofthetimes.characterCard.commands.characterSubCommands;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.lordofthetimes.characterCard.DatabaseManager;
 import net.lordofthetimes.characterCard.commands.SubCommand;
 import net.lordofthetimes.characterCard.utils.MessageSender;
@@ -15,6 +16,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.xml.crypto.Data;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class BookSubCommand implements SubCommand {
     private final JavaPlugin plugin;
@@ -53,7 +55,7 @@ public class BookSubCommand implements SubCommand {
 
         if (args.length == 0) {
             if (player.hasPermission("charactercard.character.book.self")) {
-                openBook(player);
+                openBook(player,db.getPlayerDataCache(player.getUniqueId()));
                 return true;
             }
             MessageSender.sendPermissionMessage(player,"charactercard.character.book.self");
@@ -71,9 +73,10 @@ public class BookSubCommand implements SubCommand {
                 return;
             }
 
+
             Bukkit.getScheduler().runTask(plugin, () -> {
                 player.sendMessage("This was run by opening a book by username");
-                openBook(player, offlinePlayer);
+                openBook(player,db.getPlayerDataCache(player.getUniqueId()), offlinePlayer);
             });
         });
 
@@ -81,24 +84,25 @@ public class BookSubCommand implements SubCommand {
     }
 
 
-    private void openBook(Player player,OfflinePlayer offlinePlayer){
+    private void openBook(Player player, ConcurrentHashMap<String,String> data, OfflinePlayer offlinePlayer){
         ItemStack bookItem = new ItemStack(Material.WRITTEN_BOOK);
         BookMeta meta = (BookMeta) bookItem.getItemMeta();
 
-        UUID uuid = offlinePlayer.getUniqueId();
-        String username = offlinePlayer.getName();
+        String name = data.get("loreName");
+        String lore = data.get("lore");
 
         meta.setTitle("CharacterCards");
         meta.setAuthor("CharacterCards");
-        Component component = Component.text(uuid.toString());
-        component = component.append(Component.text("\n "+username));
+        Component component = MiniMessage.miniMessage().deserialize("<bold>Name: </bold>" +name);
+        component = component.append(MiniMessage.miniMessage().deserialize("\n<bold>Lands: </bold>"+"test"));
+        component = component.append(MiniMessage.miniMessage().deserialize("\n<bold>Story: </bold>"+lore));
         meta.addPages(component);
         bookItem.setItemMeta(meta);
         player.openBook(bookItem);
     }
 
-    private  void  openBook(Player player){
-        openBook(player,Bukkit.getOfflinePlayer(player.getUniqueId()));
+    private  void  openBook(Player player,ConcurrentHashMap<String,String> data){
+        openBook(player,data,Bukkit.getOfflinePlayer(player.getUniqueId()));
     }
 
 }
