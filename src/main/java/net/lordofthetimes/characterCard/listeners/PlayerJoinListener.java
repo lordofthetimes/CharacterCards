@@ -8,10 +8,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Logger;
-
 public class PlayerJoinListener implements Listener {
 
     private final DatabaseManager db;
@@ -26,7 +22,7 @@ public class PlayerJoinListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
 
-        plugin.loadPlayer(db,player);
+        plugin.loadPlayerData(player);
 
     }
 

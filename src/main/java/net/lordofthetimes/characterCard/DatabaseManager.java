@@ -22,10 +22,18 @@ public class DatabaseManager {
 
     public void clearPlayerDataCache(UUID uuid){
         playerDataCache.remove(uuid);
-        ConcurrentHashMap<String, String> data = new ConcurrentHashMap<>(2);
-        data.put("loreName","<gray>None</gray>");
-        data.put("lore","<gray>None</gray>");
-        playerDataCache.put(uuid,data);
+        playerDataCache.put(uuid, getDefaultDataCache());
+    }
+    public void clearAllPlayerDataCache(){
+        playerDataCache.clear();
+    }
+
+    public ConcurrentHashMap<String, String> getDefaultDataCache(){
+        ConcurrentHashMap<String,String> map = new ConcurrentHashMap<>(3);
+        map.put("loreName","<gray>None</gray>");
+        map.put("age","<gray>None</gray>");
+        map.put("lore","<gray>None</gray>");
+        return map;
     }
 
     public void removePlayerDataCache(UUID uuid){
@@ -59,7 +67,7 @@ public class DatabaseManager {
                 uuid TEXT PRIMARY KEY,
                 loreName TEXT,
                 lore TEXT,
-                bookData TEXT
+                age TEXT
             );
             """;
 
@@ -72,20 +80,20 @@ public class DatabaseManager {
         });
     }
 
-    public CompletableFuture<String> getJsonBookData(UUID uuid){
+    public CompletableFuture<String> getAge(UUID uuid){
         return CompletableFuture.supplyAsync(() ->{
 
-            String sql = "SELECT bookData FROM characters where uuid = ? LIMIT 1";
+            String sql = "SELECT age FROM characters where uuid = ? LIMIT 1";
 
             try (PreparedStatement query = connection.prepareStatement(sql)) {
                 query.setString(1,uuid.toString());
                 try (ResultSet rs = query.executeQuery()) {
                     if (rs.next()) {
-                        return rs.getString("bookData");
+                        return rs.getString("age");
                     }
                 }
             } catch (SQLException e) {
-                logger.log(Level.SEVERE, "Failed to fetch bookData from characters for uuid "+ uuid.toString() + " : ", e);
+                logger.log(Level.SEVERE, "Failed to fetch age from characters for uuid "+ uuid.toString() + " : ", e);
             }
             return null;
         });
@@ -94,7 +102,7 @@ public class DatabaseManager {
         return CompletableFuture.supplyAsync(() ->{
             ConcurrentHashMap<String,String> result = new ConcurrentHashMap<>(2);
 
-            String sql = "SELECT loreName,lore FROM characters WHERE uuid = ? LIMIT 1";
+            String sql = "SELECT loreName,lore,age FROM characters WHERE uuid = ? LIMIT 1";
 
             try (PreparedStatement query = connection.prepareStatement(sql)){
                 query.setString(1,uuid.toString());
@@ -102,6 +110,7 @@ public class DatabaseManager {
                     if (rs.next()) {
                         result.put("lore",rs.getString("lore"));
                         result.put("loreName",rs.getString("loreName"));
+                        result.put("age",rs.getString("age"));
                         return result;
                     }
                 }
@@ -116,7 +125,8 @@ public class DatabaseManager {
     public CompletableFuture<Boolean> resetPlayerData(UUID uuid){
         return CompletableFuture.supplyAsync(() ->{
 
-            String sql = "UPDATE characters SET loreName = '<gray>None</gray>', lore = '<gray>None</gray>' WHERE uuid = ?";
+            String sql = "UPDATE characters SET loreName = '<gray>None</gray>', lore = '<gray>None</gray>', " +
+                    "age = '<gray>None</gray>' WHERE uuid = ?";
 
             try (PreparedStatement query = connection.prepareStatement(sql)){
                 query.setString(1, uuid.toString());
@@ -128,7 +138,7 @@ public class DatabaseManager {
         });
     }
 
-    public CompletableFuture<Boolean> insertPlayerData(UUID uuid, String loreName, String lore, String bookData){
+    public CompletableFuture<Boolean> insertPlayerData(UUID uuid, String loreName, String lore, String age){
         return CompletableFuture.supplyAsync(() ->{
             String sql = "INSERT INTO characters(uuid,loreName,lore,bookData) VALUES(?,?,?,?)";
 
@@ -136,7 +146,7 @@ public class DatabaseManager {
                 query.setString(1,uuid.toString());
                 query.setString(2,loreName);
                 query.setString(3,lore);
-                query.setString(4,bookData);
+                query.setString(4,age);
 
                 return query.executeUpdate() > 0;
             } catch (SQLException e){
@@ -145,15 +155,15 @@ public class DatabaseManager {
             return false;
         });
     }
-    public CompletableFuture<Void> updateJsonBookData(String bookData, UUID uuid){
+    public CompletableFuture<Void> updateAge(String age, UUID uuid){
         return CompletableFuture.runAsync(()->{
-            String sql = "UPDATE characters SET bookData = ? WHERE uuid = ?";
+            String sql = "UPDATE characters SET age = ? WHERE uuid = ?";
             try (PreparedStatement query = connection.prepareStatement(sql)) {
-                query.setString(1,bookData);
+                query.setString(1,age);
                 query.setString(2,uuid.toString());
                 query.executeUpdate();
             } catch (SQLException e) {
-                logger.log(Level.SEVERE, "Failed to UPDATE bookData from characters for uuid "+ uuid.toString() + " : ", e);
+                logger.log(Level.SEVERE, "Failed to UPDATE age from characters for uuid "+ uuid.toString() + " : ", e);
             }
         });
     }
