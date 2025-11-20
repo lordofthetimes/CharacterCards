@@ -1,5 +1,6 @@
 package net.lordofthetimes.characterCard.listeners;
 
+import net.lordofthetimes.characterCard.CharacterCard;
 import net.lordofthetimes.characterCard.DatabaseManager;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -14,30 +15,19 @@ import java.util.logging.Logger;
 public class PlayerJoinListener implements Listener {
 
     private final DatabaseManager db;
-    private final Logger logger;
+    private final CharacterCard plugin;
 
-    public PlayerJoinListener(DatabaseManager db, Logger logger) {
+    public PlayerJoinListener(DatabaseManager db, CharacterCard plugin) {
         this.db = db;
-        this.logger = logger;
+        this.plugin = plugin;
     }
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
 
-        if (!player.hasPlayedBefore()) {
-            db.insertPlayerData(player.getUniqueId(),"null","null","null")
-                    .thenAccept(success -> {
-                        if (!success) {
-                            logger.warning("Failed to insert default data for " + player.getName());
-                        }
-                    });
+        plugin.loadPlayer(db,player);
 
-        }
-
-        db.getPlayerData(player.getUniqueId()).thenAccept(data -> {
-            db.addPlayerDataCache(player.getUniqueId(),data);
-        });
     }
 
     @EventHandler

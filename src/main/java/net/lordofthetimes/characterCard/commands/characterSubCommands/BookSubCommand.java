@@ -1,7 +1,14 @@
 package net.lordofthetimes.characterCard.commands.characterSubCommands;
 
+
+import me.angeschossen.lands.api.LandsIntegration;
+import me.angeschossen.lands.api.land.Land;
+import me.angeschossen.lands.api.land.LandArea;
+import me.angeschossen.lands.api.nation.Nation;
+import me.angeschossen.lands.api.player.LandPlayer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.lordofthetimes.characterCard.CharacterCard;
 import net.lordofthetimes.characterCard.DatabaseManager;
 import net.lordofthetimes.characterCard.commands.SubCommand;
 import net.lordofthetimes.characterCard.utils.MessageSender;
@@ -12,17 +19,18 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
-import org.bukkit.plugin.java.JavaPlugin;
 
-import javax.xml.crypto.Data;
-import java.util.UUID;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class BookSubCommand implements SubCommand {
-    private final JavaPlugin plugin;
+    private final CharacterCard plugin;
     private final DatabaseManager db;
 
-    public BookSubCommand(JavaPlugin plugin, DatabaseManager db){
+    public BookSubCommand(CharacterCard plugin, DatabaseManager db){
         this.plugin = plugin;
         this.db = db;
     }
@@ -75,8 +83,7 @@ public class BookSubCommand implements SubCommand {
 
 
             Bukkit.getScheduler().runTask(plugin, () -> {
-                player.sendMessage("This was run by opening a book by username");
-                openBook(player,db.getPlayerDataCache(player.getUniqueId()), offlinePlayer);
+                openBook(player,db.getPlayerDataCache(offlinePlayer.getUniqueId()), offlinePlayer);
             });
         });
 
@@ -93,9 +100,16 @@ public class BookSubCommand implements SubCommand {
 
         meta.setTitle("CharacterCards");
         meta.setAuthor("CharacterCards");
-        Component component = MiniMessage.miniMessage().deserialize("<bold>Name: </bold>" +name);
-        component = component.append(MiniMessage.miniMessage().deserialize("\n<bold>Lands: </bold>"+"test"));
-        component = component.append(MiniMessage.miniMessage().deserialize("\n<bold>Story: </bold>"+lore));
+        Component component = MiniMessage.miniMessage().deserialize("<gold><bold>Name: </bold>" +name + "</gold>");
+        if(plugin.landsEnabled){
+
+            component = component.append(MiniMessage.miniMessage().deserialize("\n<dark_blue><bold>Nations: </bold>"+
+                    String.join(", ",plugin.lands.getNationNames(offlinePlayer.getUniqueId())) + "</dark_blue>"));
+
+            component = component.append(MiniMessage.miniMessage().deserialize("\n<aqua><bold>Towns: </bold>"+
+                    String.join(", ",plugin.lands.getTownNames(offlinePlayer.getUniqueId())) + "</aqua>"));
+        }
+        component = component.append(MiniMessage.miniMessage().deserialize("\n<black><bold>Story: </bold>"+lore+"</black>"));
         meta.addPages(component);
         bookItem.setItemMeta(meta);
         player.openBook(bookItem);

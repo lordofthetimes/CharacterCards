@@ -1,21 +1,21 @@
 package net.lordofthetimes.characterCard.commands.characterSubCommands;
 
+import net.lordofthetimes.characterCard.CharacterCard;
 import net.lordofthetimes.characterCard.DatabaseManager;
 import net.lordofthetimes.characterCard.commands.SubCommand;
 import net.lordofthetimes.characterCard.commands.characterSubCommands.setSubCommands.SetLoreSubCommand;
 import net.lordofthetimes.characterCard.commands.characterSubCommands.setSubCommands.SetNameSubCommand;
 import net.lordofthetimes.characterCard.utils.MessageSender;
 import org.bukkit.command.CommandSender;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.*;
 
 public class SetSubCommand implements SubCommand {
 
-    private final JavaPlugin plugin;
+    private final CharacterCard plugin;
     private final Map<String, SubCommand> subCommands = new HashMap<>();
 
-    public SetSubCommand(JavaPlugin plugin, DatabaseManager db) {
+    public SetSubCommand(CharacterCard plugin, DatabaseManager db) {
         this.plugin = plugin;
         registerSubCommand(new SetLoreSubCommand(plugin,db));
         registerSubCommand(new SetNameSubCommand(plugin,db));

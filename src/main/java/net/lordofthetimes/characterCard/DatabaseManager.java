@@ -3,8 +3,6 @@ package net.lordofthetimes.characterCard;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.*;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,6 +17,14 @@ public class DatabaseManager {
     private final ConcurrentHashMap<UUID, ConcurrentHashMap<String,String>> playerDataCache = new ConcurrentHashMap<>();
 
     public void addPlayerDataCache(UUID uuid, ConcurrentHashMap<String,String> data){
+        playerDataCache.put(uuid,data);
+    }
+
+    public void clearPlayerDataCache(UUID uuid){
+        playerDataCache.remove(uuid);
+        ConcurrentHashMap<String, String> data = new ConcurrentHashMap<>(2);
+        data.put("loreName","<gray>None</gray>");
+        data.put("lore","<gray>None</gray>");
         playerDataCache.put(uuid,data);
     }
 
@@ -87,8 +93,7 @@ public class DatabaseManager {
     public CompletableFuture<ConcurrentHashMap<String,String>> getPlayerData(UUID uuid){
         return CompletableFuture.supplyAsync(() ->{
             ConcurrentHashMap<String,String> result = new ConcurrentHashMap<>(2);
-            result.put("lore", "null");
-            result.put("loreName", "null");
+
             String sql = "SELECT loreName,lore FROM characters WHERE uuid = ? LIMIT 1";
 
             try (PreparedStatement query = connection.prepareStatement(sql)){
@@ -97,14 +102,29 @@ public class DatabaseManager {
                     if (rs.next()) {
                         result.put("lore",rs.getString("lore"));
                         result.put("loreName",rs.getString("loreName"));
+                        return result;
                     }
                 }
 
             } catch (SQLException e) {
                 logger.log(Level.SEVERE, "Failed to fetch player data from characters for uuid "+ uuid.toString() + " : ", e);
             }
+            return null;
+        });
+    }
 
-            return result;
+    public CompletableFuture<Boolean> resetPlayerData(UUID uuid){
+        return CompletableFuture.supplyAsync(() ->{
+
+            String sql = "UPDATE characters SET loreName = '<gray>None</gray>', lore = '<gray>None</gray>' WHERE uuid = ?";
+
+            try (PreparedStatement query = connection.prepareStatement(sql)){
+                query.setString(1, uuid.toString());
+                return query.executeUpdate() > 0;
+            } catch (SQLException e) {
+                plugin.getLogger().log(Level.SEVERE, "Player data update failed for uuid : " + uuid, e);
+            }
+            return false;
         });
     }
 
@@ -114,9 +134,9 @@ public class DatabaseManager {
 
             try(PreparedStatement query = connection.prepareStatement(sql)){
                 query.setString(1,uuid.toString());
-                query.setString(2,"Name not set");
-                query.setString(3,"Lore not set");
-                query.setString(4,"false");
+                query.setString(2,loreName);
+                query.setString(3,lore);
+                query.setString(4,bookData);
 
                 return query.executeUpdate() > 0;
             } catch (SQLException e){
