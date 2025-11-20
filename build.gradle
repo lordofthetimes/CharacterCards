@@ -16,9 +16,14 @@ repositories {
         name = "papermc-repo"
         url = "https://repo.papermc.io/repository/maven-public/"
     }
+    maven {
+        name ="lands"
+        url = 'https://jitpack.io'
+    }
 }
 
 dependencies {
+    compileOnly "com.github.angeschossen:LandsAPI:7.15.20"
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
     implementation 'org.xerial:sqlite-jdbc:3.42.0.0'
 }

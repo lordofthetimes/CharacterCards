@@ -2,6 +2,10 @@ name: CharacterCard
 version: '1.0-SNAPSHOT'
 main: net.lordofthetimes.characterCard.CharacterCard
 api-version: '1.21'
+
+softdepend:
+  - Lands
+
 commands:
   character:
     description: Manage your character card or see character cards of other players!

@@ -1,7 +1,10 @@
 package net.lordofthetimes.characterCard.commands;
 
+import net.lordofthetimes.characterCard.CharacterCard;
 import net.lordofthetimes.characterCard.DatabaseManager;
 import net.lordofthetimes.characterCard.commands.characterSubCommands.BookSubCommand;
+import net.lordofthetimes.characterCard.commands.characterSubCommands.ChatSubCommand;
+import net.lordofthetimes.characterCard.commands.characterSubCommands.ClearSubCommand;
 import net.lordofthetimes.characterCard.commands.characterSubCommands.SetSubCommand;
 import net.lordofthetimes.characterCard.utils.MessageSender;
 import org.bukkit.command.Command;
@@ -17,14 +20,16 @@ import java.util.*;
 public class CharacterCommand implements CommandExecutor, TabCompleter {
 
     private final Map<String, SubCommand> subCommands = new HashMap<>();
-    private final JavaPlugin plugin;
+    private final CharacterCard plugin;
     private final DatabaseManager db;
 
-    public CharacterCommand(JavaPlugin plugin, DatabaseManager db) {
+    public CharacterCommand(CharacterCard plugin, DatabaseManager db) {
         this.plugin = plugin;
         this.db = db;
         registerSubCommand(new BookSubCommand(plugin,db));
         registerSubCommand(new SetSubCommand(plugin,db));
+        registerSubCommand(new ChatSubCommand(plugin,db));
+        registerSubCommand(new ClearSubCommand(plugin,db));
     }
 
     private void registerSubCommand(SubCommand subCommand) {

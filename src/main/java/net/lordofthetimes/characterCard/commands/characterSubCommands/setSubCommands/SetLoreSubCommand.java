@@ -1,24 +1,20 @@
 package net.lordofthetimes.characterCard.commands.characterSubCommands.setSubCommands;
 
+import net.lordofthetimes.characterCard.CharacterCard;
 import net.lordofthetimes.characterCard.DatabaseManager;
 import net.lordofthetimes.characterCard.commands.SubCommand;
 import net.lordofthetimes.characterCard.utils.MessageSender;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
-
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
 
 public class SetLoreSubCommand implements SubCommand {
 
-    private final JavaPlugin plugin;
+    private final CharacterCard plugin;
     private final DatabaseManager db;
 
-    public SetLoreSubCommand(JavaPlugin plugin, DatabaseManager db) {
+    public SetLoreSubCommand(CharacterCard plugin, DatabaseManager db) {
         this.plugin = plugin;
         this.db = db;
     }
@@ -47,18 +43,18 @@ public class SetLoreSubCommand implements SubCommand {
         }
 
         if (!sender.hasPermission("charactercard.character.set.self")) {
-            MessageSender.sendPermissionMessage(sender, "charactercard.character.set.self");
+            MessageSender.sendPermissionMessage(sender, "charactercard.character.set");
             return true;
         }
         if(!(sender instanceof Player player)){
-            MessageSender.sendMessage(sender,"<red>This command can be only run by a player! </red>");
+            MessageSender.sendMessage(sender,"<red>This command can be only run by a player!</red>");
             return true;
         }
 
         String lore = String.join(" ",args);
         db.updateLore(lore,player.getUniqueId()).thenAccept(success ->{
             Bukkit.getScheduler().runTask(plugin, () -> {
-                if (success) {
+                if(success) {
                     MessageSender.sendMessage(player,"<green>Character lore has been set</green>");
                 } else {
                     MessageSender.sendMessage(player,"<red>Failed to save lore!</red>");

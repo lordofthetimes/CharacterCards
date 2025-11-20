@@ -23,7 +23,10 @@ public class MessageSender {
     }
 
     public static void sendMessage(CommandSender sender, String message){
-        MiniMessage mm = MiniMessage.miniMessage();
-        sender.sendMessage(mm.deserialize("<gold><bold>[CC]</bold></gold> "+ message));
+        sender.sendMessage(MiniMessage.miniMessage().deserialize("<gold><bold>[CC]</bold></gold> "+ message));
+    }
+
+    public static void sendCharacterCard(CommandSender sender, String message){
+        sender.sendMessage(MiniMessage.miniMessage().deserialize(message));
     }
 }
