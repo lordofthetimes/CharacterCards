@@ -17,13 +17,13 @@ repositories {
         url = "https://repo.papermc.io/repository/maven-public/"
     }
     maven {
-        name ="lands"
         url = 'https://jitpack.io'
     }
 }
 
 dependencies {
     compileOnly "com.github.angeschossen:LandsAPI:7.15.20"
+    implementation "dev.jorel:commandapi-bukkit-shade:9.7.0"
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
     implementation 'org.xerial:sqlite-jdbc:3.42.0.0'
 }
@@ -68,6 +68,7 @@ processResources {
 tasks.named("shadowJar") {
     archiveClassifier.set("")
     relocate 'org.sqlite', 'net.lordofthetimes.libs.sqlite'
+    relocate("dev.jorel.commandapi", "net.lordofthetimes.libs.commandapi")
     mergeServiceFiles()
 }
 
