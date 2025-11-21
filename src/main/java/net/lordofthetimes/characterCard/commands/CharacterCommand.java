@@ -4,7 +4,7 @@ import dev.jorel.commandapi.arguments.GreedyStringArgument;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.lordofthetimes.characterCard.CharacterCard;
-import net.lordofthetimes.characterCard.DatabaseManager;
+import net.lordofthetimes.characterCard.database.DatabaseManager;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.StringArgument;
 import net.lordofthetimes.characterCard.utils.MessageSender;
@@ -12,6 +12,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
@@ -19,6 +20,7 @@ import org.bukkit.inventory.meta.BookMeta;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiConsumer;
 
 public class CharacterCommand {
 
@@ -30,7 +32,7 @@ public class CharacterCommand {
         this.db = db;
         new CommandAPICommand("character")
                 .withPermission("charactercard.character")
-                .withAliases("profile2")
+                .withAliases("profile")
                 .withSubcommand(
                     new CommandAPICommand("book")
                             .withPermission("charactercard.character.book")
@@ -38,25 +40,10 @@ public class CharacterCommand {
                             .executes((sender,args) ->{
                                 if(sender instanceof  Player player){
                                     if(args.get("player") == null){
-                                        openBook(player);
+                                        openBook(player,player);
                                     }
                                     else{
-                                        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-                                            String target = args.get("player").toString();
-                                            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(target);
-
-                                            if (!offlinePlayer.hasPlayedBefore()) {
-                                                Bukkit.getScheduler().runTask(plugin, () -> {
-                                                    MessageSender.sendMessage(player,"<yellow>Player has never joined the server before!</yellow>");
-                                                });
-                                                return;
-                                            }
-
-
-                                            Bukkit.getScheduler().runTask(plugin, () -> {
-                                                openBook(player,offlinePlayer);
-                                            });
-                                        });;
+                                        executeCommand(args.get("player").toString(),player, this::openCharacter);
                                     }
                                 }
                             })
@@ -74,6 +61,21 @@ public class CharacterCommand {
                                                 .withPermission("charactercard.character.set")
                                                 .withArguments(new GreedyStringArgument("name"))
                                                 .executes((sender,args) -> { if(sender instanceof Player player) setName(player,(String) args.get("name")); })
+                                ).withSubcommand(
+                                        new CommandAPICommand("age")
+                                                .withPermission("charactercard.character.set")
+                                                .withArguments(new GreedyStringArgument("age"))
+                                                .executes((sender,args) -> { if(sender instanceof Player player) setAge(player,(String) args.get("age")); })
+                                ).withSubcommand(
+                                        new CommandAPICommand("race")
+                                                .withPermission("charactercard.character.set")
+                                                .withArguments(new GreedyStringArgument("race"))
+                                                .executes((sender,args) -> { if(sender instanceof Player player) setRace(player,(String) args.get("race")); })
+                                ).withSubcommand(
+                                        new CommandAPICommand("description")
+                                                .withPermission("charactercard.character.set")
+                                                .withArguments(new GreedyStringArgument("description"))
+                                                .executes((sender,args) -> { if(sender instanceof Player player) setDescription(player,(String) args.get("description")); })
                                 )
                 )
                 .withSubcommand(
@@ -83,25 +85,9 @@ public class CharacterCommand {
                                 .executes((sender,args) ->{
                                     if((sender instanceof Player player)) {
                                         if (args.get("player") == null) {
-                                            openCharacter(player);
+                                            openCharacter(player,player);
                                         } else {
-                                            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-                                                String target = args.get("player").toString();
-                                                OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(target);
-
-                                                if (!offlinePlayer.hasPlayedBefore()) {
-                                                    Bukkit.getScheduler().runTask(plugin, () -> {
-                                                        MessageSender.sendMessage(player, "<yellow>Player has never joined the server before!</yellow>");
-                                                    });
-                                                    return;
-                                                }
-
-
-                                                Bukkit.getScheduler().runTask(plugin, () -> {
-                                                    openCharacter(player, offlinePlayer);
-                                                });
-                                            });
-                                            ;
+                                            executeCommand(args.get("player").toString(),player, this::openCharacter);
                                         }
                                     }
                                 })
@@ -112,25 +98,13 @@ public class CharacterCommand {
                                 .withOptionalArguments(new StringArgument("player")
                                         .withPermission("charactercard.character.clear.others"))
                                 .executes((sender,args)->{
-                                    if(args.get("player") == null && sender instanceof Player player){
-                                        clearData(player);
-                                    }
-                                    else{
-                                        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-                                            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args.get("player").toString());
-
-                                            if (!offlinePlayer.hasPlayedBefore()) {
-                                                Bukkit.getScheduler().runTask(plugin, () -> {
-                                                    MessageSender.sendMessage(sender,"<yellow>This player has never joined the server before!</yellow>");
-                                                });
-                                                return;
-                                            }
-
-
-                                            Bukkit.getScheduler().runTask(plugin, () -> {
-                                                clearData(sender,offlinePlayer);
-                                            });
-                                        });
+                                    if(sender instanceof Player player){
+                                        if(args.get("player") == null){
+                                            clearData(player,player);
+                                        }
+                                        else{
+                                            executeCommand(args.get("player").toString(),player, this::openCharacter);
+                                        }
                                     }
                                 })
                 ).register();
@@ -161,7 +135,39 @@ public class CharacterCommand {
     }
 
     private void setAge(Player player, String age){
+        db.updateAge(age,player.getUniqueId()).thenAccept(success ->{
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                if(success) {
+                    MessageSender.sendMessage(player,"<green>Character age has been set</green>");
+                } else {
+                    MessageSender.sendMessage(player,"<red>Failed to save age!</red>");
+                }
+            });
+        });
+    }
 
+    private void setRace(Player player, String updateRace){
+        db.updateRace(updateRace,player.getUniqueId()).thenAccept(success ->{
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                if(success) {
+                    MessageSender.sendMessage(player,"<green>Character race has been set</green>");
+                } else {
+                    MessageSender.sendMessage(player,"<red>Failed to save race!</red>");
+                }
+            });
+        });
+    }
+
+    private void setDescription(Player player, String description){
+        db.updateDescription(description,player.getUniqueId()).thenAccept(success ->{
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                if(success) {
+                    MessageSender.sendMessage(player,"<green>Character description has been set</green>");
+                } else {
+                    MessageSender.sendMessage(player,"<red>Failed to save description!</red>");
+                }
+            });
+        });
     }
 
     private void openBook(Player viewer, OfflinePlayer target) {
@@ -173,65 +179,88 @@ public class CharacterCommand {
         }
 
         String name = data.get("loreName");
+        String age = data.get("age");
         String lore = data.get("lore");
+        String race = data.get("race");
+        String description = data.get("description");
+
+        FileConfiguration config = plugin.getConfig();
 
         ItemStack bookItem = new ItemStack(Material.WRITTEN_BOOK);
         BookMeta meta = (BookMeta) bookItem.getItemMeta();
         meta.setTitle("CharacterCards");
         meta.setAuthor("CharacterCards");
 
-        Component component = MiniMessage.miniMessage().deserialize("<gold><bold>Name: </bold>" + name + "</gold>");
-
+        Component page1 = MiniMessage.miniMessage().deserialize(
+                        config.getString("nameMessage").replace("<%name%>",name) +
+                                config.getString("ageMessage").replace("<%age%>",age) +
+                                config.getString("raceMessage").replace("<%race%>",race)
+        );
         if (plugin.landsEnabled) {
-            component = component.append(MiniMessage.miniMessage().deserialize(
-                    "\n<dark_blue><bold>Nations: </bold>" + String.join(", ", plugin.lands.getNationNames(target.getUniqueId())) + "</dark_blue>"));
 
-            component = component.append(MiniMessage.miniMessage().deserialize(
-                    "\n<aqua><bold>Towns: </bold>" + String.join(", ", plugin.lands.getTownNames(target.getUniqueId())) + "</aqua>"));
+
+            if(plugin.lands.townsCard){
+                String townsNames = String.join(", ", plugin.lands.getTownNames(target.getUniqueId()));
+                page1 = page1.append(MiniMessage.miniMessage().deserialize(config.getString("lands.townsMessage")
+                        .replace("<%towns%>",townsNames)));
+            }
+
+            if(plugin.lands.townsCard){
+                String nationsNames = String.join(", ", plugin.lands.getNationNames(target.getUniqueId()));
+                page1 = page1.append(MiniMessage.miniMessage().deserialize(config.getString("lands.nationsMessage")
+                        .replace("<%nations%>",nationsNames)));
+            }
+
         }
 
-        component = component.append(MiniMessage.miniMessage().deserialize(
-                "\n<black><bold>Story: </bold>" + lore + "</black>"));
+        page1 = page1.append(MiniMessage.miniMessage().deserialize(
+                config.getString("descriptionMessage").replace("<%description%>",description)));
 
-        meta.addPages(component);
+        Component page2 = MiniMessage.miniMessage().deserialize(
+                config.getString("loreMessage").replace("<%lore%>",lore));
+
+        meta.addPages(page1,page2);
         bookItem.setItemMeta(meta);
 
         viewer.openBook(bookItem);
     }
-    public void openBook(Player viewer) {
-        openBook(viewer, viewer);
-    }
 
     private void openCharacter(Player player, OfflinePlayer offlinePlayer){
         ConcurrentHashMap<String,String> data = db.getPlayerDataCache(offlinePlayer.getUniqueId());
-        String loreName = data.get("loreName");
+
+        String name = data.get("loreName");
+        String age = data.get("age");
         String lore = data.get("lore");
+        String race = data.get("race");
+        String description = data.get("description");
+        FileConfiguration config = plugin.getConfig();
+
 
         List<String> part = new ArrayList<String >();
-        part.add("""
-        <gold><bold>———===[ Character Card ]===———</bold></gold>
-        <yellow>Name:</yellow> <white><bold>%s</bold></white>
-        """.formatted(loreName));
+        part.add(
+                "<gold><bold>———===[ Character Card ]===———</bold></gold>\n" +
+                config.getString("nameMessage").replace("<%name%>",name) +
+                config.getString("ageMessage").replace("<%age%>",age) +
+                config.getString("raceMessage").replace("<%race%>",race)
+        );
         if(plugin.landsEnabled){
 
-            String nationNames = plugin.lands.getNationNames(offlinePlayer.getUniqueId());
-            String townNames = plugin.lands.getTownNames(offlinePlayer.getUniqueId());
+            if(plugin.lands.townsCard){
+                String townsNames = String.join(", ", plugin.lands.getTownNames(offlinePlayer.getUniqueId()));
+                part.add(config.getString("lands.townsMessage").replace("<%towns%>",townsNames));
+            }
 
-            part.add("""
-            <dark_aqua>Nation(s):</dark_aqua> <white>%s</white>
-            <blue>Town(s):</blue> <white>%s</white>
-            """.formatted(nationNames,townNames));
+            if(plugin.lands.townsCard){
+                String nationsNames = String.join(", ", plugin.lands.getNationNames(offlinePlayer.getUniqueId()));
+                part.add(config.getString("lands.nationsMessage").replace("<%nations%>",nationsNames));
+            }
         }
-        part.add("""
-        <green>Lore:</green>
-        <italic><white>%s</white></italic>
-        <gold><bold>————=====================————</bold></gold>
-        """.formatted(lore));
+        part.add(
+                config.getString("descriptionMessage").replace("<%description%>",description) + "\n" +
+                config.getString("loreMessage").replace("<%lore%>",lore) +
+                "\n<gold><bold>————=====================————</bold></gold>"
+        );
         MessageSender.sendCharacterCard(player,String.join("",part));
-    }
-
-    private void openCharacter(Player player){
-        openCharacter(player,player);
     }
 
     private void clearData(CommandSender sender, OfflinePlayer player){
@@ -239,7 +268,31 @@ public class CharacterCommand {
         db.resetPlayerData(player.getUniqueId());
         MessageSender.sendMessage(sender,"<yellow>Character data was cleared to default state!</yellow>");
     }
-    private void clearData(Player player){
-        clearData(player,player);
+
+    private void executeCommand(String arg,Player sender, BiConsumer<Player, OfflinePlayer> command){
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+
+            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(arg);
+            boolean offline = !offlinePlayer.isOnline();
+
+            if (!offlinePlayer.hasPlayedBefore() && offline) {
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    MessageSender.sendMessage(sender, "<yellow>Player has never joined the server before!</yellow>");
+                });
+                return;
+            }
+
+            if (offline) {
+                plugin.loadPlayerData(offlinePlayer.getUniqueId());
+            }
+
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                command.accept(sender,offlinePlayer);
+                if(offline){
+                    db.removePlayerDataCache(offlinePlayer.getUniqueId());
+                }
+            });
+        });
     }
+
 }

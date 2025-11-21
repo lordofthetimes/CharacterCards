@@ -1,5 +1,6 @@
-package net.lordofthetimes.characterCard;
+package net.lordofthetimes.characterCard.database;
 
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.*;
@@ -11,10 +12,20 @@ import java.util.logging.Logger;
 
 public class DatabaseManager {
     private final JavaPlugin plugin;
-    private final Logger logger;
     private Connection connection;
+    private final DatabaseLogger logger;
+    private final Boolean debug;
+    private final String path;
 
     private final ConcurrentHashMap<UUID, ConcurrentHashMap<String,String>> playerDataCache = new ConcurrentHashMap<>();
+
+    public DatabaseManager(JavaPlugin plugin) {
+        this.plugin = plugin;
+        this.logger = new DatabaseLogger(plugin.getLogger());
+        FileConfiguration config = plugin.getConfig();
+        this.debug = config.getBoolean("database.debug");
+        this.path = config.getString("database.path");
+    }
 
     public void addPlayerDataCache(UUID uuid, ConcurrentHashMap<String,String> data){
         playerDataCache.put(uuid,data);
@@ -29,9 +40,11 @@ public class DatabaseManager {
     }
 
     public ConcurrentHashMap<String, String> getDefaultDataCache(){
-        ConcurrentHashMap<String,String> map = new ConcurrentHashMap<>(3);
+        ConcurrentHashMap<String,String> map = new ConcurrentHashMap<>(5);
         map.put("loreName","<gray>None</gray>");
         map.put("age","<gray>None</gray>");
+        map.put("race","<gray>None</gray>");
+        map.put("description","<gray>None</gray>");
         map.put("lore","<gray>None</gray>");
         return map;
     }
@@ -44,19 +57,13 @@ public class DatabaseManager {
         return playerDataCache.get(uuid);
     }
 
-
-    public DatabaseManager(JavaPlugin plugin) {
-        this.plugin = plugin;
-        this.logger = plugin.getLogger();
-    }
-
     public void connect(String filePath) {
         try {
-            String url = "jdbc:sqlite:" + "plugins/CharacterCard/charactercard.db";
+            String url = "jdbc:sqlite:" + plugin.getConfig().getString("database.path");
             connection = DriverManager.getConnection(url);
-            logger.info("Connected to SQLite database!");
+            logger.logInfo("Connected to SQLite database!");
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Failed to connect to SQLite database!", e);
+            logger.logError("Failed to connect to SQLite database! ",e);
         }
     }
 
@@ -66,16 +73,22 @@ public class DatabaseManager {
             CREATE TABLE IF NOT EXISTS characters (
                 uuid TEXT PRIMARY KEY,
                 loreName TEXT,
-                lore TEXT,
-                age TEXT
+                age TEXT,
+                race TEXT,
+                description TEXT,
+                lore TEXT
             );
             """;
 
+            if(debug){
+                logger.logQuery(sql);
+            }
+
             try (Statement query = connection.createStatement()) {
                 query.execute(sql);
-                logger.info("Character table ensured in database.");
+                logger.logInfo("Character table ensured in database.");
             } catch (SQLException e) {
-                logger.log(Level.SEVERE, "Failed to create character table : ", e);
+                logger.logError("Failed to create character table : ", e);
             }
         });
     }
@@ -85,6 +98,10 @@ public class DatabaseManager {
 
             String sql = "SELECT age FROM characters where uuid = ? LIMIT 1";
 
+            if(debug){
+                logger.logQuery(sql);
+            }
+
             try (PreparedStatement query = connection.prepareStatement(sql)) {
                 query.setString(1,uuid.toString());
                 try (ResultSet rs = query.executeQuery()) {
@@ -93,7 +110,7 @@ public class DatabaseManager {
                     }
                 }
             } catch (SQLException e) {
-                logger.log(Level.SEVERE, "Failed to fetch age from characters for uuid "+ uuid.toString() + " : ", e);
+                logger.logError("Failed to fetch age from characters for uuid "+ uuid.toString() + " : ", e);
             }
             return null;
         });
@@ -102,7 +119,11 @@ public class DatabaseManager {
         return CompletableFuture.supplyAsync(() ->{
             ConcurrentHashMap<String,String> result = new ConcurrentHashMap<>(2);
 
-            String sql = "SELECT loreName,lore,age FROM characters WHERE uuid = ? LIMIT 1";
+            String sql = "SELECT lore, loreName, age, race, description FROM characters WHERE uuid = ? LIMIT 1";
+
+            if(debug){
+                logger.logQuery(sql);
+            }
 
             try (PreparedStatement query = connection.prepareStatement(sql)){
                 query.setString(1,uuid.toString());
@@ -111,12 +132,14 @@ public class DatabaseManager {
                         result.put("lore",rs.getString("lore"));
                         result.put("loreName",rs.getString("loreName"));
                         result.put("age",rs.getString("age"));
+                        result.put("race",rs.getString("race"));
+                        result.put("description",rs.getString("description"));
                         return result;
                     }
                 }
 
             } catch (SQLException e) {
-                logger.log(Level.SEVERE, "Failed to fetch player data from characters for uuid "+ uuid.toString() + " : ", e);
+                logger.logError("Failed to fetch player data from characters for uuid "+ uuid.toString() + " : ", e);
             }
             return null;
         });
@@ -126,7 +149,11 @@ public class DatabaseManager {
         return CompletableFuture.supplyAsync(() ->{
 
             String sql = "UPDATE characters SET loreName = '<gray>None</gray>', lore = '<gray>None</gray>', " +
-                    "age = '<gray>None</gray>' WHERE uuid = ?";
+                    "age = '<gray>None</gray>', race = '<gray>None</gray>', description = '<gray>None</gray>' WHERE uuid = ?";
+
+            if(debug){
+                logger.logQuery(sql);
+            }
 
             try (PreparedStatement query = connection.prepareStatement(sql)){
                 query.setString(1, uuid.toString());
@@ -138,33 +165,102 @@ public class DatabaseManager {
         });
     }
 
-    public CompletableFuture<Boolean> insertPlayerData(UUID uuid, String loreName, String lore, String age){
+    public CompletableFuture<Boolean> insertPlayerData(UUID uuid, String loreName, String lore, String age, String race, String description){
         return CompletableFuture.supplyAsync(() ->{
-            String sql = "INSERT INTO characters(uuid,loreName,lore,bookData) VALUES(?,?,?,?)";
+            String sql = "INSERT INTO characters(uuid,loreName,lore,age,race,description) VALUES(?,?,?,?,?,?)";
+
+            if(debug){
+                logger.logQuery(sql);
+            }
 
             try(PreparedStatement query = connection.prepareStatement(sql)){
                 query.setString(1,uuid.toString());
                 query.setString(2,loreName);
                 query.setString(3,lore);
                 query.setString(4,age);
+                query.setString(5,race);
+                query.setString(6,description);
 
                 return query.executeUpdate() > 0;
             } catch (SQLException e){
-                logger.log(Level.SEVERE,"Failed to insert data in characters for uuid "+ uuid.toString() + " : ", e);
+                logger.logError("Failed to insert data in characters for uuid "+ uuid.toString() + " : ", e);
             }
             return false;
         });
     }
-    public CompletableFuture<Void> updateAge(String age, UUID uuid){
-        return CompletableFuture.runAsync(()->{
-            String sql = "UPDATE characters SET age = ? WHERE uuid = ?";
-            try (PreparedStatement query = connection.prepareStatement(sql)) {
+
+    public CompletableFuture<Boolean> updateAge(String age, UUID uuid){
+        return CompletableFuture.supplyAsync(()->{
+            try {
+                ConcurrentHashMap<String,String> data = getPlayerDataCache(uuid);
+                if (data == null) {
+                    throw new IllegalStateException("Cache missing for UUID: " + uuid);
+                }
+                data.replace("age", age);
+                String sql = "UPDATE characters SET age = ? WHERE uuid = ?";
+
+                if(debug){
+                    logger.logQuery(sql);
+                }
+
+                PreparedStatement query = connection.prepareStatement(sql);
                 query.setString(1,age);
                 query.setString(2,uuid.toString());
-                query.executeUpdate();
+                return query.executeUpdate() > 0;
             } catch (SQLException e) {
-                logger.log(Level.SEVERE, "Failed to UPDATE age from characters for uuid "+ uuid.toString() + " : ", e);
+                logger.logError("Failed to UPDATE age from characters for uuid "+ uuid.toString() + " : ", e);
             }
+            return false;
+        });
+    }
+
+    public CompletableFuture<Boolean> updateDescription(String description, UUID uuid){
+        return CompletableFuture.supplyAsync(()->{
+            try {
+                ConcurrentHashMap<String,String> data = getPlayerDataCache(uuid);
+                if (data == null) {
+                    throw new IllegalStateException("Cache missing for UUID: " + uuid);
+                }
+                data.replace("description", description);
+                String sql = "UPDATE characters SET description = ? WHERE uuid = ?";
+
+                if(debug){
+                    logger.logQuery(sql);
+                }
+
+                PreparedStatement query = connection.prepareStatement(sql);
+                query.setString(1,description);
+                query.setString(2,uuid.toString());
+                return query.executeUpdate() > 0;
+            } catch (SQLException e) {
+                logger.logError("Failed to UPDATE description from characters for uuid "+ uuid.toString() + " : ", e);
+            }
+            return false;
+        });
+    }
+
+    public CompletableFuture<Boolean> updateRace(String race, UUID uuid){
+        return CompletableFuture.supplyAsync(()->{
+            try {
+                ConcurrentHashMap<String,String> data = getPlayerDataCache(uuid);
+                if (data == null) {
+                    throw new IllegalStateException("Cache missing for UUID: " + uuid);
+                }
+                data.replace("race", race);
+                String sql = "UPDATE characters SET race = ? WHERE uuid = ?";
+
+                if(debug){
+                    logger.logQuery(sql);
+                }
+
+                PreparedStatement query = connection.prepareStatement(sql);
+                query.setString(1,race);
+                query.setString(2,uuid.toString());
+                return query.executeUpdate() > 0;
+            } catch (SQLException e) {
+                logger.logError("Failed to UPDATE race from characters for uuid "+ uuid.toString() + " : ", e);
+            }
+            return false;
         });
     }
 
@@ -178,15 +274,20 @@ public class DatabaseManager {
                 data.replace("lore", lore);
 
                 String sql = "UPDATE characters SET lore = ? WHERE uuid = ?";
+
+                if(debug){
+                    logger.logQuery(sql);
+                }
+
                 try (PreparedStatement query = connection.prepareStatement(sql)){
                     query.setString(1, lore);
                     query.setString(2, uuid.toString());
                     return query.executeUpdate() > 0;
                 }
             } catch (Exception e) {
-                plugin.getLogger().log(Level.SEVERE, "Async updateLore failed for uuid " + uuid, e);
-                return false;
+                logger.logError("Async updateLore failed for uuid " + uuid, e);
             }
+            return false;
         });
     }
     public CompletableFuture<Boolean> updateName(String name, UUID uuid){
@@ -205,9 +306,9 @@ public class DatabaseManager {
                     return query.executeUpdate() > 0;
                 }
             } catch (Exception e) {
-                plugin.getLogger().log(Level.SEVERE, "Async updateName failed for uuid " + uuid, e);
-                return false;
+                logger.logError("Async updateName failed for uuid " + uuid, e);
             }
+            return false;
         });
     }
 
@@ -219,7 +320,7 @@ public class DatabaseManager {
         try {
             if (connection != null) connection.close();
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Failed to close SQLite connection!", e);
+            logger.logError("Failed to close SQLite connection!", e);
         }
     }
 

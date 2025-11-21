@@ -1,7 +1,7 @@
 package net.lordofthetimes.characterCard.listeners;
 
 import net.lordofthetimes.characterCard.CharacterCard;
-import net.lordofthetimes.characterCard.DatabaseManager;
+import net.lordofthetimes.characterCard.database.DatabaseManager;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -21,9 +21,7 @@ public class PlayerJoinListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-
-        plugin.loadPlayerData(player);
-
+        plugin.loadPlayerData(player.getUniqueId());
     }
 
     @EventHandler

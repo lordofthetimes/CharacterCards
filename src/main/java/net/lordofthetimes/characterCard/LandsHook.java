@@ -12,9 +12,13 @@ import java.util.UUID;
 public class LandsHook {
 
     public final LandsIntegration api;
+    public final Boolean townsCard;
+    public final Boolean nationsCard;
 
     public LandsHook(CharacterCard plugin) {
         api = LandsIntegration.of(plugin);
+        townsCard = plugin.getConfig().getBoolean("lands.towns");
+        nationsCard = plugin.getConfig().getBoolean("lands.nations");
     }
 
     public String getTownNames(UUID uuid){
