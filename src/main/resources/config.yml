@@ -39,6 +39,20 @@ lands:
   nationsMessage: "\n<dark_blue><bold>Nation(s):</bold> <%nations%></dark_blue>"
 
 # ╔                                              ╗
+# ║                   PAPI COMPATIBILITY         ║
+# ╚                                              ╝
+papi:
+  # Enable PlaceholderAPI support [default - true]
+  enabled: true
+
+  # Enable placeholder usage in messages [default - true]
+  use: true
+
+  # Enable placeholders for character card values [default - true]
+  get: true
+
+
+# ╔                                              ╗
 # ║             DATABASE SETTINGS                ║
 # ╚                                              ╝
 database:

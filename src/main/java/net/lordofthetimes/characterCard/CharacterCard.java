@@ -14,7 +14,11 @@ import java.util.UUID;
 public final class CharacterCard extends JavaPlugin {
 
     public boolean landsEnabled = false;
+    public boolean papiEnabled = false;
+
     public LandsHook lands;
+    public CharacterCardPlaceholderExpansion papi;
+
     private DatabaseManager db;
 
 
@@ -28,13 +32,19 @@ public final class CharacterCard extends JavaPlugin {
         saveDefaultConfig();
 
         if (getServer().getPluginManager().getPlugin("Lands") != null && getConfig().getBoolean("lands.enabled")) {
-            getLogger().info("Lands detected! Enabling town features...");
+            getLogger().info("Lands detected, support enabled!");
             enableLandsSupport();
         }
+
 
         db = new DatabaseManager(this);
         db.connect("plugins/CharacterCard/charactercard.db");
         db.generateTables();
+
+        if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null && getConfig().getBoolean("papi.enabled")) {
+            getLogger().info("PAPI detected, support enabled!");
+            enablePAPISupport();
+        }
 
         for(Player player : Bukkit.getOnlinePlayers()){
             loadPlayerData(player.getUniqueId());
@@ -53,6 +63,12 @@ public final class CharacterCard extends JavaPlugin {
     private void enableLandsSupport(){
         this.landsEnabled = true;
         this.lands = new LandsHook(this);
+    }
+
+    private void enablePAPISupport(){
+        this.papiEnabled = true;
+        this.papi= new CharacterCardPlaceholderExpansion(this,db);
+        papi.register();
     }
 
     public void loadPlayerData(UUID uuid){

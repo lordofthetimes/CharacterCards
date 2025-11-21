@@ -12,14 +12,14 @@ public class DatabaseLogger{
     }
 
     public void logQuery(String sql){
-        logger.log(Level.INFO,"[CC][DB] Executing query: "+ sql);
+        logger.log(Level.INFO,"[DB] Executing query: "+ sql);
     }
 
     public void logError(String message, Throwable e){
-        logger.log(Level.SEVERE, "[CC][DB] " + message, e);
+        logger.log(Level.SEVERE, "[DB] " + message, e);
     }
 
     public void logInfo(String message){
-        logger.log(Level.INFO, "[CC][DB] " + message);
+        logger.log(Level.INFO, "[DB] " + message);
     }
 }

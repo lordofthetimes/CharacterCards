@@ -1,6 +1,8 @@
 package net.lordofthetimes.characterCard.commands;
 
+import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.GreedyStringArgument;
+import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.lordofthetimes.characterCard.CharacterCard;
@@ -16,6 +18,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,18 +35,22 @@ public class CharacterCommand {
         this.db = db;
         new CommandAPICommand("character")
                 .withPermission("charactercard.character")
-                .withAliases("profile")
+                .withAliases("profile", "card")
                 .withSubcommand(
                     new CommandAPICommand("book")
                             .withPermission("charactercard.character.book")
-                            .withOptionalArguments(new StringArgument("player"))
+                            .withOptionalArguments(new StringArgument("player")
+                                    .replaceSuggestions(ArgumentSuggestions.strings(info ->
+                                            Bukkit.getOnlinePlayers().stream()
+                                                    .map(Player::getName)
+                                                    .toArray(String[]::new))))
                             .executes((sender,args) ->{
                                 if(sender instanceof  Player player){
                                     if(args.get("player") == null){
                                         openBook(player,player);
                                     }
                                     else{
-                                        executeCommand(args.get("player").toString(),player, this::openCharacter);
+                                        executeCommand(args.get("player").toString(),player, this::openBook);
                                     }
                                 }
                             })
@@ -54,7 +61,8 @@ public class CharacterCommand {
                                 .withSubcommand(
                                         new CommandAPICommand("lore")
                                                 .withPermission("charactercard.character.set")
-                                                .withArguments(new GreedyStringArgument("lore"))
+                                                .withArguments(new GreedyStringArgument("lore")
+                                                )
                                                 .executes((sender,args) -> { if(sender instanceof Player player) setLore(player,(String) args.get("lore")); })
                                 ).withSubcommand(
                                         new CommandAPICommand("name")
@@ -81,7 +89,8 @@ public class CharacterCommand {
                 .withSubcommand(
                         new CommandAPICommand("chat")
                                 .withPermission("charactercard.character.chat")
-                                .withOptionalArguments(new StringArgument("player"))
+                                .withOptionalArguments(new StringArgument("player")
+                                        .replaceSuggestions(suggestPlayers()))
                                 .executes((sender,args) ->{
                                     if((sender instanceof Player player)) {
                                         if (args.get("player") == null) {
@@ -96,6 +105,7 @@ public class CharacterCommand {
                         new CommandAPICommand("clear")
                                 .withPermission("charactercard.character.clear")
                                 .withOptionalArguments(new StringArgument("player")
+                                        .replaceSuggestions(suggestPlayers())
                                         .withPermission("charactercard.character.clear.others"))
                                 .executes((sender,args)->{
                                     if(sender instanceof Player player){
@@ -107,7 +117,14 @@ public class CharacterCommand {
                                         }
                                     }
                                 })
-                ).register();
+                )
+                .executes((sender)->{
+                        MessageSender.sendCharacterCard(sender.sender(),getHelp());
+                }).register();
+    }
+
+    private @NotNull ArgumentSuggestions<CommandSender> getSuggestions() {
+        return suggestPlayers();
     }
 
     private void setName(Player player,String name){
@@ -191,34 +208,40 @@ public class CharacterCommand {
         meta.setTitle("CharacterCards");
         meta.setAuthor("CharacterCards");
 
-        Component page1 = MiniMessage.miniMessage().deserialize(
-                        config.getString("nameMessage").replace("<%name%>",name) +
-                                config.getString("ageMessage").replace("<%age%>",age) +
-                                config.getString("raceMessage").replace("<%race%>",race)
-        );
+
+        String page1String = config.getString("nameMessage").replace("<%name%>",name) +
+                config.getString("ageMessage").replace("<%age%>",age) +
+                config.getString("raceMessage").replace("<%race%>",race);
         if (plugin.landsEnabled) {
 
 
             if(plugin.lands.townsCard){
                 String townsNames = String.join(", ", plugin.lands.getTownNames(target.getUniqueId()));
-                page1 = page1.append(MiniMessage.miniMessage().deserialize(config.getString("lands.townsMessage")
-                        .replace("<%towns%>",townsNames)));
+                page1String += config.getString("lands.townsMessage")
+                        .replace("<%towns%>",townsNames);
             }
 
             if(plugin.lands.townsCard){
                 String nationsNames = String.join(", ", plugin.lands.getNationNames(target.getUniqueId()));
-                page1 = page1.append(MiniMessage.miniMessage().deserialize(config.getString("lands.nationsMessage")
-                        .replace("<%nations%>",nationsNames)));
+                page1String += config.getString("lands.nationsMessage")
+                        .replace("<%nations%>",nationsNames);
             }
 
         }
 
-        page1 = page1.append(MiniMessage.miniMessage().deserialize(
-                config.getString("descriptionMessage").replace("<%description%>",description)));
+        page1String += config.getString("descriptionMessage").replace("<%description%>",description);
 
-        Component page2 = MiniMessage.miniMessage().deserialize(
-                config.getString("loreMessage").replace("<%lore%>",lore));
 
+
+        String page2String = config.getString("loreMessage").replace("<%lore%>",lore);
+
+        if(plugin.papiEnabled){
+            page1String = PlaceholderAPI.setPlaceholders(target,page1String);
+            page2String = PlaceholderAPI.setPlaceholders(target,page2String);
+        }
+
+        Component page1 = MiniMessage.miniMessage().deserialize(page1String);
+        Component page2 = MiniMessage.miniMessage().deserialize(page2String);
         meta.addPages(page1,page2);
         bookItem.setItemMeta(meta);
 
@@ -260,6 +283,11 @@ public class CharacterCommand {
                 config.getString("loreMessage").replace("<%lore%>",lore) +
                 "\n<gold><bold>————=====================————</bold></gold>"
         );
+
+        if(plugin.papiEnabled){
+            part = PlaceholderAPI.setPlaceholders(offlinePlayer,part);
+        }
+
         MessageSender.sendCharacterCard(player,String.join("",part));
     }
 
@@ -295,4 +323,23 @@ public class CharacterCommand {
         });
     }
 
+    private ArgumentSuggestions<CommandSender> suggestPlayers(){
+        return ArgumentSuggestions.strings(info ->
+                Bukkit.getOnlinePlayers().stream()
+                        .map(Player::getName)
+                        .toArray(String[]::new));
+    }
+
+    private String getHelp(){
+        return  "<gold><bold>———===[ <#FFD54F>Character Card</#FFD54F> ]===———</bold></gold>\n" +
+                "<yellow><bold>Version: <white>" + plugin.getDescription().getVersion() + "</white></bold></yellow>\n" +
+                "<yellow><bold>By: <white>" + String.join(", ", plugin.getDescription().getAuthors()) + "</white></bold></yellow>\n" +
+                "<yellow><bold>Aliases: <green>profile</green>, <green>card</green></bold></yellow>\n" +
+                "<yellow><bold>Commands:</bold></yellow>\n" +
+                "<green><bold>/character set</bold></green>\n" +
+                "<green><bold>/character book</bold></green>\n" +
+                "<green><bold>/character chat</bold></green>\n" +
+                "<green><bold>/character clear</bold></green>\n" +
+                "<gold><bold>————=====================————</bold></gold>";
+    }
 }
