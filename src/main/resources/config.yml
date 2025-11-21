@@ -1,0 +1,48 @@
+#####################################################
+#                                                   #
+#               CHARACTER CARD CONFIG               #
+#                                                   #
+#####################################################
+
+# Message string that will be used for name, use <%name%> for a placeholder
+nameMessage: "<gold><bold>Name: </bold><%name%></gold>"
+
+# Message string that will be used for age, use <%age%> for a placeholder
+ageMessage: "\n<gold><bold>Age: </bold><%age%></gold>"
+
+# Message string that will be used for race, use <%race%> for a placeholder
+raceMessage: "\n<gold><bold>Race: </bold><%race%></gold>\n"
+
+# Message string that will be used for description, use <%description%> for a placeholder
+descriptionMessage: "\n<gold><bold>Description: </bold><%description%></gold>"
+
+# Message string that will be used for lore, use <%lore%> for a placeholder
+loreMessage: "<black><bold>Lore: </bold><%lore%></black>"
+
+# ╔                                              ╗
+# ║             LANDS COMPATIBILITY              ║
+# ╚                                              ╝
+lands:
+  # Enable lands support [default - true]
+  enabled: true
+
+  # This will make character card include lands info for towns
+  towns: true
+
+  # This will make character card include lands info for towns
+  nations: true
+
+  # Message string that will be used, use <%towns%>for a placeholder
+  townsMessage: "\n<aqua><bold>Town(s):</bold> <%towns%></aqua>"
+
+  # Message string that will be used, use <%nations%> for a placeholder
+  nationsMessage: "\n<dark_blue><bold>Nation(s):</bold> <%nations%></dark_blue>"
+
+# ╔                                              ╗
+# ║             DATABASE SETTINGS                ║
+# ╚                                              ╝
+database:
+  # Enables debug messages
+  debug: false
+  # Location of the database file
+  path: "plugins/CharacterCard/charactercard.db"

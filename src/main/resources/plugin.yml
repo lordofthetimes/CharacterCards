@@ -1,5 +1,5 @@
 name: CharacterCard
-version: '1.0-SNAPSHOT'
+version: '1.0.0'
 main: net.lordofthetimes.characterCard.CharacterCard
 api-version: '1.21'
 dependencies:
