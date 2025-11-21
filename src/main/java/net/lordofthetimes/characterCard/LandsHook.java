@@ -24,6 +24,10 @@ public class LandsHook {
     public String getTownNames(UUID uuid){
         LandPlayer landPlayer = api.getLandPlayer(uuid);
 
+        if(landPlayer == null){
+            return "<gray>None</gray>";
+        }
+
         List<String> townNames = landPlayer.getLands().stream()
                 .map(Land::getName)
                 .toList();
@@ -34,6 +38,11 @@ public class LandsHook {
 
     public String getNationNames(UUID uuid){
         LandPlayer landPlayer = api.getLandPlayer(uuid);
+
+        if(landPlayer == null){
+            return "<gray>None</gray>";
+        }
+
         List<String> nationNames = landPlayer.getLands().stream()
                 .map(Land::getNation)
                 .filter(Objects::nonNull)

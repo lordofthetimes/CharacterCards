@@ -2,11 +2,16 @@ name: CharacterCard
 version: '1.0.0'
 main: net.lordofthetimes.characterCard.CharacterCard
 api-version: '1.21'
+author: LordofTheTimes
 dependencies:
   server:
     CommandAPI:
       load: BEFORE
       required: true
       join-classpath: true
-softdepend:
-  - Lands
+    PlaceholderAPI:
+      load: BEFORE
+      required: false
+    LandsAPI:
+      load: BEFORE
+      required: false
