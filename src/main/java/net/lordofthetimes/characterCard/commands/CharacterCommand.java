@@ -118,6 +118,13 @@ public class CharacterCommand {
                                     }
                                 })
                 )
+                .withSubcommand(
+                        new CommandAPICommand("help")
+                                .withPermission("charactercard.character")
+                                .executes((sender)->{
+                                    MessageSender.sendCharacterCard(sender.sender(),getHelp());
+                                })
+                )
                 .executes((sender)->{
                         MessageSender.sendCharacterCard(sender.sender(),getHelp());
                 }).register();
@@ -309,17 +316,7 @@ public class CharacterCommand {
                 });
                 return;
             }
-
-            if (offline) {
-                plugin.loadPlayerData(offlinePlayer.getUniqueId());
-            }
-
-            Bukkit.getScheduler().runTask(plugin, () -> {
-                command.accept(sender,offlinePlayer);
-                if(offline){
-                    db.removePlayerDataCache(offlinePlayer.getUniqueId());
-                }
-            });
+            command.accept(sender,offlinePlayer);
         });
     }
 
@@ -334,7 +331,7 @@ public class CharacterCommand {
         return  "<gold><bold>———===[ <#FFD54F>Character Card</#FFD54F> ]===———</bold></gold>\n" +
                 "<yellow><bold>Version: <white>" + plugin.getDescription().getVersion() + "</white></bold></yellow>\n" +
                 "<yellow><bold>By: <white>" + String.join(", ", plugin.getDescription().getAuthors()) + "</white></bold></yellow>\n" +
-                "<yellow><bold>Aliases: <green>profile</green>, <green>card</green></bold></yellow>\n" +
+                "<yellow><bold>Aliases: <green>profile</green> , <green>card</green></bold></yellow>\n" +
                 "<yellow><bold>Commands:</bold></yellow>\n" +
                 "<green><bold>/character set</bold></green>\n" +
                 "<green><bold>/character book</bold></green>\n" +

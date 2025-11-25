@@ -18,6 +18,9 @@ public class DatabaseLogger{
     public void logError(String message, Throwable e){
         logger.log(Level.SEVERE, "[DB] " + message, e);
     }
+    public void logError(String message){
+        logger.log(Level.SEVERE, "[DB] " + message);
+    }
 
     public void logInfo(String message){
         logger.log(Level.INFO, "[DB] " + message);

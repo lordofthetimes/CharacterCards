@@ -8,6 +8,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
+import java.util.UUID;
+
 public class PlayerJoinListener implements Listener {
 
     private final DatabaseManager db;
@@ -21,12 +23,16 @@ public class PlayerJoinListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        plugin.loadPlayerData(player.getUniqueId());
-    }
-
-    @EventHandler
-    public void onPlayerLeave(PlayerQuitEvent event) {
-        Player player = event.getPlayer();
-        db.removePlayerDataCache(player.getUniqueId());
+        UUID uuid = player.getUniqueId();
+        if(!player.hasPlayedBefore()){
+            db.addPlayerDataCache(uuid,db.getDefaultDataCache());
+            String def = "<gray>None</gray>";
+            db.insertPlayerData(uuid,def,def,def,def,def)
+                    .thenAccept(success -> {
+                        if (!success) {
+                            plugin.getLogger().warning("Failed to insert default data for uuid : " + uuid);
+                        }
+                    });
+        }
     }
 }

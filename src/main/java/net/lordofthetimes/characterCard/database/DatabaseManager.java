@@ -1,5 +1,6 @@
 package net.lordofthetimes.characterCard.database;
 
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -12,11 +13,11 @@ import java.util.logging.Level;
 public class DatabaseManager {
     private final JavaPlugin plugin;
     private Connection connection;
-    private final DatabaseLogger logger;
+    public final DatabaseLogger logger;
     private final Boolean debug;
     private final String path;
 
-    private final ConcurrentHashMap<UUID, ConcurrentHashMap<String,String>> playerDataCache = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<UUID, ConcurrentHashMap<String,String>> playerDataCache = new ConcurrentHashMap<>();
 
     public DatabaseManager(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -24,6 +25,10 @@ public class DatabaseManager {
         FileConfiguration config = plugin.getConfig();
         this.debug = config.getBoolean("database.debug");
         this.path = config.getString("database.path");
+    }
+
+    public void setPlayersDataCache(ConcurrentHashMap<UUID, ConcurrentHashMap<String,String>> map){
+        this.playerDataCache = map;
     }
 
     public void addPlayerDataCache(UUID uuid, ConcurrentHashMap<String,String> data){
@@ -58,7 +63,7 @@ public class DatabaseManager {
 
     public void connect(String filePath) {
         try {
-            String url = "jdbc:sqlite:" + plugin.getConfig().getString("database.path");
+            String url = "jdbc:sqlite:" + path;
             connection = DriverManager.getConnection(url);
             logger.logInfo("Connected to SQLite database!");
         } catch (SQLException e) {
@@ -141,6 +146,40 @@ public class DatabaseManager {
                 logger.logError("Failed to fetch player data from characters for uuid "+ uuid.toString() + " : ", e);
             }
             return null;
+        });
+    }
+
+    public CompletableFuture<ConcurrentHashMap<UUID, ConcurrentHashMap<String, String>>> getAllPlayersData() {
+        return CompletableFuture.supplyAsync(() -> {
+            ConcurrentHashMap<UUID, ConcurrentHashMap<String, String>> allData = new ConcurrentHashMap<>();
+
+            String sql = "SELECT uuid, lore, loreName, age, race, description FROM characters";
+
+            if(debug){
+                logger.logQuery(sql);
+            }
+
+            try (PreparedStatement query = connection.prepareStatement(sql);
+                 ResultSet rs = query.executeQuery()) {
+
+                while (rs.next()) {
+                    UUID uuid = UUID.fromString(rs.getString("uuid"));
+                    ConcurrentHashMap<String, String> playerData = new ConcurrentHashMap<>(5);
+
+                    playerData.put("lore", rs.getString("lore"));
+                    playerData.put("loreName", rs.getString("loreName"));
+                    playerData.put("age", rs.getString("age"));
+                    playerData.put("race", rs.getString("race"));
+                    playerData.put("description", rs.getString("description"));
+
+                    allData.put(uuid, playerData);
+                }
+
+            } catch (SQLException e) {
+                logger.logError("Failed to fetch all player data from characters: ", e);
+            }
+
+            return allData;
         });
     }
 

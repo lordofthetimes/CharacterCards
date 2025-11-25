@@ -40,17 +40,26 @@ public final class CharacterCard extends JavaPlugin {
         db = new DatabaseManager(this);
         db.connect("plugins/CharacterCard/charactercard.db");
         db.generateTables();
+        db.getAllPlayersData().thenAccept(allData -> {
+            if (allData != null) {
+                db.setPlayersDataCache(allData);
+                db.logger.logInfo("Loaded " + allData.size() + " players into cache!");
+            } else {
+                db.logger.logError("Failed to load player data into cache!");
+                db.logger.logError("Failed to load player data into cache!");
+                db.logger.logError("Failed to load player data into cache!");
+                db.logger.logError("Failed to load player data into cache!");
+
+            }
+        });
 
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null && getConfig().getBoolean("papi.enabled")) {
             getLogger().info("PAPI detected, support enabled!");
             enablePAPISupport();
         }
 
-        for(Player player : Bukkit.getOnlinePlayers()){
-            loadPlayerData(player.getUniqueId());
-        }
+
         new CharacterCommand(this, db);
-        getServer().getPluginManager().registerEvents(new PlayerJoinListener(db,this), this);
 
     }
 
@@ -70,25 +79,4 @@ public final class CharacterCard extends JavaPlugin {
         this.papi= new CharacterCardPlaceholderExpansion(this,db);
         papi.register();
     }
-
-    public void loadPlayerData(UUID uuid){
-        db.getPlayerData(uuid).thenAccept(data -> {
-            if (data == null) {
-                db.addPlayerDataCache(uuid,db.getDefaultDataCache());
-                String def = "<gray>None</gray>";
-                db.insertPlayerData(uuid,def,def,def,def,def)
-                        .thenAccept(success -> {
-                            if (!success) {
-                                this.getLogger().warning("Failed to insert default data for uuid : " + uuid);
-                            }
-                        });
-            }
-            else{
-                db.addPlayerDataCache(uuid,data);
-            }
-
-        });
-    }
-
-
 }
