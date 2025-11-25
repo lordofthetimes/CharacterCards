@@ -20,8 +20,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.text.StyledEditorKit;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
@@ -29,6 +32,7 @@ public class CharacterCommand {
 
     private final CharacterCard plugin;
     private final DatabaseManager db;
+    private final HashMap<UUID, Long> lastUse = new HashMap<>();
 
     public CharacterCommand(CharacterCard plugin, DatabaseManager db) {
         this.plugin = plugin;
@@ -113,7 +117,7 @@ public class CharacterCommand {
                                             clearData(player,player);
                                         }
                                         else{
-                                            executeCommand(args.get("player").toString(),player, this::openCharacter);
+                                            executeCommand(args.get("player").toString(),player, this::clearData);
                                         }
                                     }
                                 })
@@ -122,10 +126,16 @@ public class CharacterCommand {
                         new CommandAPICommand("help")
                                 .withPermission("charactercard.character")
                                 .executes((sender)->{
+                                    if(sender instanceof  Player player){
+                                        if(isOnCooldown(player)) return;
+                                    }
                                     MessageSender.sendCharacterCard(sender.sender(),getHelp());
                                 })
                 )
                 .executes((sender)->{
+                        if(sender instanceof  Player player){
+                            if(isOnCooldown(player)) return;
+                        }
                         MessageSender.sendCharacterCard(sender.sender(),getHelp());
                 }).register();
     }
@@ -135,6 +145,9 @@ public class CharacterCommand {
     }
 
     private void setName(Player player,String name){
+
+        if(isOnCooldown(player)) return;
+
         db.updateName(name,player.getUniqueId()).thenAccept(success ->{
             Bukkit.getScheduler().runTask(plugin, () -> {
                 if (success) {
@@ -147,6 +160,9 @@ public class CharacterCommand {
     }
 
     private void setLore(Player player,String lore){
+
+        if(isOnCooldown(player)) return;
+
         db.updateLore(lore,player.getUniqueId()).thenAccept(success ->{
             Bukkit.getScheduler().runTask(plugin, () -> {
                 if(success) {
@@ -159,6 +175,9 @@ public class CharacterCommand {
     }
 
     private void setAge(Player player, String age){
+
+        if(isOnCooldown(player)) return;
+
         db.updateAge(age,player.getUniqueId()).thenAccept(success ->{
             Bukkit.getScheduler().runTask(plugin, () -> {
                 if(success) {
@@ -171,6 +190,9 @@ public class CharacterCommand {
     }
 
     private void setRace(Player player, String updateRace){
+
+        if(isOnCooldown(player)) return;
+
         db.updateRace(updateRace,player.getUniqueId()).thenAccept(success ->{
             Bukkit.getScheduler().runTask(plugin, () -> {
                 if(success) {
@@ -183,6 +205,9 @@ public class CharacterCommand {
     }
 
     private void setDescription(Player player, String description){
+
+        if(isOnCooldown(player)) return;
+
         db.updateDescription(description,player.getUniqueId()).thenAccept(success ->{
             Bukkit.getScheduler().runTask(plugin, () -> {
                 if(success) {
@@ -255,8 +280,12 @@ public class CharacterCommand {
         viewer.openBook(bookItem);
     }
 
-    private void openCharacter(Player player, OfflinePlayer offlinePlayer){
+    private void openCharacter(Player viewer, OfflinePlayer offlinePlayer){
         ConcurrentHashMap<String,String> data = db.getPlayerDataCache(offlinePlayer.getUniqueId());
+        if (data == null) {
+            MessageSender.sendMessage(viewer, "<red>Player data is not loaded yet!</red>");
+            return;
+        }
 
         String name = data.get("loreName");
         String age = data.get("age");
@@ -295,7 +324,7 @@ public class CharacterCommand {
             part = PlaceholderAPI.setPlaceholders(offlinePlayer,part);
         }
 
-        MessageSender.sendCharacterCard(player,String.join("",part));
+        MessageSender.sendCharacterCard(viewer,String.join("",part));
     }
 
     private void clearData(CommandSender sender, OfflinePlayer player){
@@ -305,9 +334,14 @@ public class CharacterCommand {
     }
 
     private void executeCommand(String arg,Player sender, BiConsumer<Player, OfflinePlayer> command){
+
+        if(isOnCooldown(sender)) return;
+
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
 
-            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(arg);
+            Player online = Bukkit.getPlayerExact(arg);
+            OfflinePlayer offlinePlayer = online != null ? online : Bukkit.getOfflinePlayer(arg);
+
             boolean offline = !offlinePlayer.isOnline();
 
             if (!offlinePlayer.hasPlayedBefore() && offline) {
@@ -338,5 +372,16 @@ public class CharacterCommand {
                 "<green><bold>/character chat</bold></green>\n" +
                 "<green><bold>/character clear</bold></green>\n" +
                 "<gold><bold>————=====================————</bold></gold>";
+    }
+
+    private Boolean isOnCooldown(Player player){
+        UUID uuid = player.getUniqueId();
+        long timeLeft = System.currentTimeMillis()- lastUse.get(uuid);
+        if((lastUse.containsKey(uuid) && timeLeft < 1000)){
+            MessageSender.sendCooldown(player,timeLeft);
+            return true;
+        }
+        lastUse.put(player.getUniqueId(),System.currentTimeMillis());
+        return false;
     }
 }
