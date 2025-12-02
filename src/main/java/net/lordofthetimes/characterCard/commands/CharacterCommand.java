@@ -49,7 +49,7 @@ public class CharacterCommand {
                                                     .map(Player::getName)
                                                     .toArray(String[]::new))))
                             .executes((sender,args) ->{
-                                if(sender instanceof  Player player){
+                                if(sender instanceof  Player player && !isOnCooldown(player)){
                                     if(args.get("player") == null){
                                         openBook(player,player);
                                     }
@@ -96,7 +96,8 @@ public class CharacterCommand {
                                 .withOptionalArguments(new StringArgument("player")
                                         .replaceSuggestions(suggestPlayers()))
                                 .executes((sender,args) ->{
-                                    if((sender instanceof Player player)) {
+
+                                    if((sender instanceof Player player && !isOnCooldown(player))) {
                                         if (args.get("player") == null) {
                                             openCharacter(player,player);
                                         } else {
@@ -112,7 +113,7 @@ public class CharacterCommand {
                                         .replaceSuggestions(suggestPlayers())
                                         .withPermission("charactercard.character.clear.others"))
                                 .executes((sender,args)->{
-                                    if(sender instanceof Player player){
+                                    if(sender instanceof Player player && !isOnCooldown(player)){
                                         if(args.get("player") == null){
                                             clearData(player,player);
                                         }
@@ -126,17 +127,22 @@ public class CharacterCommand {
                         new CommandAPICommand("help")
                                 .withPermission("charactercard.character")
                                 .executes((sender)->{
-                                    if(sender instanceof  Player player){
-                                        if(isOnCooldown(player)) return;
+                                    if(sender instanceof  Player player && !isOnCooldown(player)){
+                                        MessageSender.sendCharacterCard(sender.sender(),getHelp());
                                     }
-                                    MessageSender.sendCharacterCard(sender.sender(),getHelp());
+                                    else{
+                                        MessageSender.sendCharacterCard(sender.sender(),getHelp());
+                                    }
+
                                 })
                 )
                 .executes((sender)->{
-                        if(sender instanceof  Player player){
-                            if(isOnCooldown(player)) return;
+                        if(sender instanceof  Player player && !isOnCooldown(player)){
+                            MessageSender.sendCharacterCard(sender.sender(),getHelp());
                         }
-                        MessageSender.sendCharacterCard(sender.sender(),getHelp());
+                        else{
+                            MessageSender.sendCharacterCard(sender.sender(),getHelp());
+                        }
                 }).register();
     }
 
@@ -335,8 +341,6 @@ public class CharacterCommand {
 
     private void executeCommand(String arg,Player sender, BiConsumer<Player, OfflinePlayer> command){
 
-        if(isOnCooldown(sender)) return;
-
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
 
             Player online = Bukkit.getPlayerExact(arg);
@@ -376,8 +380,15 @@ public class CharacterCommand {
 
     private Boolean isOnCooldown(Player player){
         UUID uuid = player.getUniqueId();
-        long timeLeft = System.currentTimeMillis()- lastUse.get(uuid);
-        if((lastUse.containsKey(uuid) && timeLeft < 1000)){
+        long timeLeft;
+        if(lastUse.containsKey(uuid)) {
+            timeLeft = System.currentTimeMillis() - lastUse.get(uuid);
+        }
+        else{
+            timeLeft = System.currentTimeMillis();
+        }
+
+        if(timeLeft < 1000){
             MessageSender.sendCooldown(player,timeLeft);
             return true;
         }

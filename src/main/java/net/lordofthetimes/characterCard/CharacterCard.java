@@ -4,12 +4,10 @@ import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import net.lordofthetimes.characterCard.commands.CharacterCommand;
 import net.lordofthetimes.characterCard.database.DatabaseManager;
+
 import net.lordofthetimes.characterCard.listeners.PlayerJoinListener;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.UUID;
 
 public final class CharacterCard extends JavaPlugin {
 
@@ -60,6 +58,7 @@ public final class CharacterCard extends JavaPlugin {
 
 
         new CharacterCommand(this, db);
+        getServer().getPluginManager().registerEvents(new PlayerJoinListener(db,this),this);
 
     }
 

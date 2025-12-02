@@ -34,5 +34,17 @@ public class PlayerJoinListener implements Listener {
                         }
                     });
         }
+        else{
+            if(db.getPlayerDataCache(uuid) == null){
+                db.addPlayerDataCache(uuid,db.getDefaultDataCache());
+                String def = "<gray>None</gray>";
+                db.insertPlayerData(uuid,def,def,def,def,def)
+                        .thenAccept(success -> {
+                            if (!success) {
+                                plugin.getLogger().warning("Failed to insert default data for uuid : " + uuid);
+                            }
+                        });
+            }
+        }
     }
 }
