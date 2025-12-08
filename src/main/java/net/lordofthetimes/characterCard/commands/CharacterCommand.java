@@ -154,6 +154,10 @@ public class CharacterCommand {
 
         if(isOnCooldown(player)) return;
 
+        if(plugin.essentialsXEnabled){
+            plugin.essentials.updateNickname(player,name);
+        }
+
         db.updateName(name,player.getUniqueId()).thenAccept(success ->{
             Bukkit.getScheduler().runTask(plugin, () -> {
                 if (success) {
@@ -334,6 +338,9 @@ public class CharacterCommand {
     }
 
     private void clearData(CommandSender sender, OfflinePlayer player){
+        if(plugin.essentialsXEnabled){
+            plugin.essentials.updateNickname(player,null);
+        }
         db.clearPlayerDataCache(player.getUniqueId());
         db.resetPlayerData(player.getUniqueId());
         MessageSender.sendMessage(sender,"<yellow>Character data was cleared to default state!</yellow>");

@@ -51,6 +51,14 @@ papi:
   # Enable placeholders for character card values [default - true]
   get: true
 
+# ╔                                              ╗
+# ║           ESSENTIALS X SETTINGS              ║
+# ╚                                              ╝
+essentials:
+  # Enable EssentialsX support [default - true]
+  enabled: true
+  # Enable nickname change to the characters name automatically [default - true]
+  nickname: true
 
 # ╔                                              ╗
 # ║             DATABASE SETTINGS                ║

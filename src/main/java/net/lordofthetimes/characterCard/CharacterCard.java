@@ -5,6 +5,9 @@ import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import net.lordofthetimes.characterCard.commands.CharacterCommand;
 import net.lordofthetimes.characterCard.database.DatabaseManager;
 
+import net.lordofthetimes.characterCard.hooks.CharacterCardPlaceholderExpansion;
+import net.lordofthetimes.characterCard.hooks.EssentialsXHook;
+import net.lordofthetimes.characterCard.hooks.LandsHook;
 import net.lordofthetimes.characterCard.listeners.PlayerJoinListener;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -13,9 +16,11 @@ public final class CharacterCard extends JavaPlugin {
 
     public boolean landsEnabled = false;
     public boolean papiEnabled = false;
+    public boolean essentialsXEnabled = false;
 
     public LandsHook lands;
     public CharacterCardPlaceholderExpansion papi;
+    public EssentialsXHook essentials;
 
     private DatabaseManager db;
 
@@ -33,6 +38,12 @@ public final class CharacterCard extends JavaPlugin {
             getLogger().info("Lands detected, support enabled!");
             enableLandsSupport();
         }
+
+        if (getServer().getPluginManager().getPlugin("Essentials") != null && getConfig().getBoolean("essentials.enabled")) {
+            getLogger().info("Essentials detected, support enabled!");
+            enableEssentialsXSupport();
+        }
+
 
 
         db = new DatabaseManager(this);
@@ -78,4 +89,10 @@ public final class CharacterCard extends JavaPlugin {
         this.papi= new CharacterCardPlaceholderExpansion(this,db);
         papi.register();
     }
+
+    private void enableEssentialsXSupport(){
+        this.essentialsXEnabled = true;
+        this.essentials = new EssentialsXHook(this);
+    }
+
 }

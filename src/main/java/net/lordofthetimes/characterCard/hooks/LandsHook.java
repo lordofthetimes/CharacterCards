@@ -1,9 +1,10 @@
-package net.lordofthetimes.characterCard;
+package net.lordofthetimes.characterCard.hooks;
 
 import me.angeschossen.lands.api.LandsIntegration;
 import me.angeschossen.lands.api.land.Land;
 import me.angeschossen.lands.api.nation.Nation;
 import me.angeschossen.lands.api.player.LandPlayer;
+import net.lordofthetimes.characterCard.CharacterCard;
 
 import java.util.List;
 import java.util.Objects;

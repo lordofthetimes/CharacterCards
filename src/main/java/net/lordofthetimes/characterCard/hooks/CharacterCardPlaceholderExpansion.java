@@ -1,13 +1,12 @@
-package net.lordofthetimes.characterCard;
+package net.lordofthetimes.characterCard.hooks;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
+import net.lordofthetimes.characterCard.CharacterCard;
 import net.lordofthetimes.characterCard.database.DatabaseManager;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class CharacterCardPlaceholderExpansion extends PlaceholderExpansion{
@@ -15,7 +14,7 @@ public class CharacterCardPlaceholderExpansion extends PlaceholderExpansion{
     private final CharacterCard plugin;
     private final DatabaseManager db;
 
-    CharacterCardPlaceholderExpansion(CharacterCard plugin, DatabaseManager db){
+    public CharacterCardPlaceholderExpansion(CharacterCard plugin, DatabaseManager db){
         this.plugin = plugin;
         this.db = db;
     }
