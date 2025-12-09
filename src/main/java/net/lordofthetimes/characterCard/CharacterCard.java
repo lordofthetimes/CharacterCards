@@ -9,10 +9,15 @@ import net.lordofthetimes.characterCard.hooks.CharacterCardPlaceholderExpansion;
 import net.lordofthetimes.characterCard.hooks.EssentialsXHook;
 import net.lordofthetimes.characterCard.hooks.LandsHook;
 import net.lordofthetimes.characterCard.listeners.PlayerJoinListener;
+import net.lordofthetimes.characterCard.utils.CharacterCardLogger;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 
 public final class CharacterCard extends JavaPlugin {
+
+    public final CharacterCardLogger logger = new CharacterCardLogger(this.getLogger());
 
     public boolean landsEnabled = false;
     public boolean papiEnabled = false;
@@ -47,21 +52,22 @@ public final class CharacterCard extends JavaPlugin {
 
 
         db = new DatabaseManager(this);
-        db.connect("plugins/CharacterCard/charactercard.db");
+        db.connect();
         db.generateTables();
+        db.tryAddColumns();
+        tryUpdateConfig();
         db.getAllPlayersData().thenAccept(allData -> {
             if (allData != null) {
                 db.setPlayersDataCache(allData);
-                db.logger.logInfo("Loaded " + allData.size() + " players into cache!");
+                db.logger.logInfoDB("Loaded " + allData.size() + " player(s) into cache!");
             } else {
-                db.logger.logError("Failed to load player data into cache!");
-                db.logger.logError("Failed to load player data into cache!");
-                db.logger.logError("Failed to load player data into cache!");
-                db.logger.logError("Failed to load player data into cache!");
-
+                db.logger.logErrorDB("Failed to load player data into cache!");
+                db.logger.logErrorDB("Failed to load player data into cache!");
+                db.logger.logErrorDB("Failed to load player data into cache!");
+                db.logger.logErrorDB("Failed to load player data into cache!");
+                this.onDisable();
             }
         });
-
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null && getConfig().getBoolean("papi.enabled")) {
             getLogger().info("PAPI detected, support enabled!");
             enablePAPISupport();
@@ -93,6 +99,38 @@ public final class CharacterCard extends JavaPlugin {
     private void enableEssentialsXSupport(){
         this.essentialsXEnabled = true;
         this.essentials = new EssentialsXHook(this);
+    }
+
+    private void tryUpdateConfig(){
+        FileConfiguration config = this.getConfig();
+
+        if(!config.contains("version")){
+            config.set("version",100);
+            logger.logWarn("Version inside config file is missing, default value for 1.0.0 is set! If this was not empty before, God bless your config ;(");
+        }
+
+        int configVersion = config.getInt("version");
+        int pluginVersion = Integer.parseInt(getDescription().getVersion().replace(".",""));
+
+        if(pluginVersion == configVersion){
+            logger.logInfo("Config is up to date");
+            return;
+        }
+
+        if(configVersion < 110){
+
+            config.set("genderMessage","\\n<gold><bold>Gender: </bold><%gender%></gold>\\n");
+
+            ConfigurationSection essentialsSection = config.createSection("essentials");
+            essentialsSection.set("enabled",true);
+            essentialsSection.set("nickname",true);
+
+            logger.logInfo("Successfully added config section for version 1.1.0");
+
+        }
+        config.set("version",pluginVersion);
+        saveConfig();
+
     }
 
 }

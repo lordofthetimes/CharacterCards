@@ -21,6 +21,7 @@ import org.bukkit.inventory.meta.BookMeta;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.text.StyledEditorKit;
+import java.io.Console;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -88,9 +89,13 @@ public class CharacterCommand {
                                                 .withPermission("charactercard.character.set")
                                                 .withArguments(new GreedyStringArgument("description"))
                                                 .executes((sender,args) -> { if(sender instanceof Player player) setDescription(player,(String) args.get("description")); })
+                                ).withSubcommand(
+                                        new CommandAPICommand("gender")
+                                                .withPermission("charactercard.character.set")
+                                                .withArguments(new GreedyStringArgument("gender"))
+                                                .executes((sender,args) -> { if(sender instanceof Player player) setGender(player,(String) args.get("gender")); })
                                 )
-                )
-                .withSubcommand(
+                ).withSubcommand(
                         new CommandAPICommand("chat")
                                 .withPermission("charactercard.character.chat")
                                 .withOptionalArguments(new StringArgument("player")
@@ -118,7 +123,7 @@ public class CharacterCommand {
                                             clearData(player,player);
                                         }
                                         else{
-                                            executeCommand(args.get("player").toString(),player, this::clearData);
+                                            if(player.hasPermission("charactercard.character.clear.others")) executeCommand(args.get("player").toString(),player, this::clearData);
                                         }
                                     }
                                 })
@@ -146,9 +151,6 @@ public class CharacterCommand {
                 }).register();
     }
 
-    private @NotNull ArgumentSuggestions<CommandSender> getSuggestions() {
-        return suggestPlayers();
-    }
 
     private void setName(Player player,String name){
 
@@ -229,6 +231,21 @@ public class CharacterCommand {
         });
     }
 
+    private void setGender(Player player, String gender){
+
+        if(isOnCooldown(player)) return;
+
+        db.updateGender(gender,player.getUniqueId()).thenAccept(success ->{
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                if(success) {
+                    MessageSender.sendMessage(player,"<green>Character gender has been set</green>");
+                } else {
+                    MessageSender.sendMessage(player,"<red>Failed to save gender!</red>");
+                }
+            });
+        });
+    }
+
     private void openBook(Player viewer, OfflinePlayer target) {
         ConcurrentHashMap<String,String> data = db.getPlayerDataCache(target.getUniqueId());
 
@@ -241,19 +258,20 @@ public class CharacterCommand {
         String age = data.get("age");
         String lore = data.get("lore");
         String race = data.get("race");
+        String gender = data.get("gender");
         String description = data.get("description");
 
         FileConfiguration config = plugin.getConfig();
 
         ItemStack bookItem = new ItemStack(Material.WRITTEN_BOOK);
         BookMeta meta = (BookMeta) bookItem.getItemMeta();
-        meta.setTitle("CharacterCards");
-        meta.setAuthor("CharacterCards");
 
-
+        plugin.logger.logErrorDB(gender);
+        plugin.logger.logErrorDB(gender);
         String page1String = config.getString("nameMessage").replace("<%name%>",name) +
                 config.getString("ageMessage").replace("<%age%>",age) +
-                config.getString("raceMessage").replace("<%race%>",race);
+                config.getString("raceMessage").replace("<%race%>",race) +
+                config.getString("genderMessage").replace("<%gender%>",gender);
         if (plugin.landsEnabled) {
 
 
@@ -301,16 +319,17 @@ public class CharacterCommand {
         String age = data.get("age");
         String lore = data.get("lore");
         String race = data.get("race");
+        String gender = data.get("gender");
         String description = data.get("description");
         FileConfiguration config = plugin.getConfig();
-
 
         List<String> part = new ArrayList<String >();
         part.add(
                 "<gold><bold>———===[ Character Card ]===———</bold></gold>\n" +
                 config.getString("nameMessage").replace("<%name%>",name) +
                 config.getString("ageMessage").replace("<%age%>",age) +
-                config.getString("raceMessage").replace("<%race%>",race)
+                config.getString("raceMessage").replace("<%race%>",race) +
+                config.getString("genderMessage").replace("<%gender%>",gender)
         );
         if(plugin.landsEnabled){
 
