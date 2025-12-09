@@ -1,5 +1,6 @@
 package net.lordofthetimes.characterCard.hooks;
 
+import dev.dejvokep.boostedyaml.YamlDocument;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import net.lordofthetimes.characterCard.CharacterCard;
 import net.lordofthetimes.characterCard.database.DatabaseManager;
@@ -13,10 +14,12 @@ public class CharacterCardPlaceholderExpansion extends PlaceholderExpansion{
 
     private final CharacterCard plugin;
     private final DatabaseManager db;
+    private final YamlDocument config;
 
-    public CharacterCardPlaceholderExpansion(CharacterCard plugin, DatabaseManager db){
+    public CharacterCardPlaceholderExpansion(CharacterCard plugin, DatabaseManager db, YamlDocument config){
         this.plugin = plugin;
         this.db = db;
+        this.config = config;
     }
 
     @Override

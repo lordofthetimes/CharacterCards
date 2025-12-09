@@ -1,5 +1,6 @@
 package net.lordofthetimes.characterCard.commands;
 
+import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.GreedyStringArgument;
 import me.clip.placeholderapi.PlaceholderAPI;
@@ -261,13 +262,11 @@ public class CharacterCommand {
         String gender = data.get("gender");
         String description = data.get("description");
 
-        FileConfiguration config = plugin.getConfig();
+        YamlDocument config = plugin.config;
 
         ItemStack bookItem = new ItemStack(Material.WRITTEN_BOOK);
         BookMeta meta = (BookMeta) bookItem.getItemMeta();
 
-        plugin.logger.logErrorDB(gender);
-        plugin.logger.logErrorDB(gender);
         String page1String = config.getString("nameMessage").replace("<%name%>",name) +
                 config.getString("ageMessage").replace("<%age%>",age) +
                 config.getString("raceMessage").replace("<%race%>",race) +
@@ -321,7 +320,7 @@ public class CharacterCommand {
         String race = data.get("race");
         String gender = data.get("gender");
         String description = data.get("description");
-        FileConfiguration config = plugin.getConfig();
+        YamlDocument config = plugin.config;
 
         List<String> part = new ArrayList<String >();
         part.add(

@@ -37,4 +37,11 @@ public class CharacterCardLogger {
     public void logWarn(String message){
         logger.log(Level.WARNING,"[CC] " + message);
     }
+
+    public void logError(String message, Throwable e){
+        logger.log(Level.SEVERE, "[CC] " + message, e);
+    }
+    public void logError(String message){
+        logger.log(Level.SEVERE, "[CC] " + message);
+    }
 }

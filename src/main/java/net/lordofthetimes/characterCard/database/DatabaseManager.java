@@ -1,5 +1,6 @@
 package net.lordofthetimes.characterCard.database;
 
+import dev.dejvokep.boostedyaml.YamlDocument;
 import net.lordofthetimes.characterCard.CharacterCard;
 import net.lordofthetimes.characterCard.utils.CharacterCardLogger;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -28,7 +29,7 @@ public class DatabaseManager {
     public DatabaseManager(CharacterCard plugin) {
         this.plugin = plugin;
         this.logger = plugin.logger;
-        FileConfiguration config = plugin.getConfig();
+        YamlDocument config = plugin.config;
         this.debug = config.getBoolean("database.debug");
         this.path = config.getString("database.path");
     }

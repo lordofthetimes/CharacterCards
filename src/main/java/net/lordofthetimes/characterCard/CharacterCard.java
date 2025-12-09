@@ -1,5 +1,12 @@
 package net.lordofthetimes.characterCard;
 
+import dev.dejvokep.boostedyaml.YamlDocument;
+import dev.dejvokep.boostedyaml.dvs.versioning.BasicVersioning;
+import dev.dejvokep.boostedyaml.route.Route;
+import dev.dejvokep.boostedyaml.settings.dumper.DumperSettings;
+import dev.dejvokep.boostedyaml.settings.general.GeneralSettings;
+import dev.dejvokep.boostedyaml.settings.loader.LoaderSettings;
+import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import net.lordofthetimes.characterCard.commands.CharacterCommand;
@@ -14,11 +21,16 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
+import java.io.IOException;
+
+import static dev.dejvokep.boostedyaml.route.Route.fromSingleKey;
+
 
 public final class CharacterCard extends JavaPlugin {
 
     public final CharacterCardLogger logger = new CharacterCardLogger(this.getLogger());
-
+    public YamlDocument config;
     public boolean landsEnabled = false;
     public boolean papiEnabled = false;
     public boolean essentialsXEnabled = false;
@@ -37,14 +49,44 @@ public final class CharacterCard extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        saveDefaultConfig();
 
-        if (getServer().getPluginManager().getPlugin("Lands") != null && getConfig().getBoolean("lands.enabled")) {
+        String version = this.getPluginMeta().getVersion();
+
+        logger.logInfo("Enabling CharacterCard v" + version);
+        logger.logInfo("\n################################\n\n" +
+                "▄▖▖▖▄▖▄▖▄▖▄▖▄▖▄▖▄▖  ▄▖▄▖▄▖▄ \n" +
+                "▌ ▙▌▌▌▙▘▌▌▌ ▐ ▙▖▙▘  ▌ ▌▌▙▘▌▌\n" +
+                "▙▖▌▌▛▌▌▌▛▌▙▖▐ ▙▖▌▌  ▙▖▛▌▌▌▙▘\n" +
+                "                            \n" +
+                "CharacterCard v" + version + " - Enjoy your roleplay!\n\n" +
+                "################################");
+
+        try {
+            config = YamlDocument.create(
+                    new File(this.getDataFolder(), "config.yml"),
+                    this.getResource("config.yml"),
+                    GeneralSettings.DEFAULT,
+                    LoaderSettings.DEFAULT,
+                    DumperSettings.DEFAULT,
+                    UpdaterSettings.builder()
+                            .setVersioning(new BasicVersioning("version"))
+                            .setOptionSorting(UpdaterSettings.OptionSorting.SORT_BY_DEFAULTS)
+                            .build()
+            );
+            config.update();
+        } catch (Exception e) {
+            logger.logError("Failed to load or update config! Plugin is being disabled ",e);
+            onDisable();
+        }
+        logger.logInfo("Config loaded successfully!");
+
+
+        if (getServer().getPluginManager().getPlugin("Lands") != null && config.getBoolean("lands.enabled")) {
             getLogger().info("Lands detected, support enabled!");
             enableLandsSupport();
         }
 
-        if (getServer().getPluginManager().getPlugin("Essentials") != null && getConfig().getBoolean("essentials.enabled")) {
+        if (getServer().getPluginManager().getPlugin("Essentials") != null && config.getBoolean("essentials.enabled")) {
             getLogger().info("Essentials detected, support enabled!");
             enableEssentialsXSupport();
         }
@@ -55,7 +97,6 @@ public final class CharacterCard extends JavaPlugin {
         db.connect();
         db.generateTables();
         db.tryAddColumns();
-        tryUpdateConfig();
         db.getAllPlayersData().thenAccept(allData -> {
             if (allData != null) {
                 db.setPlayersDataCache(allData);
@@ -68,7 +109,7 @@ public final class CharacterCard extends JavaPlugin {
                 this.onDisable();
             }
         });
-        if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null && getConfig().getBoolean("papi.enabled")) {
+        if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null && config.getBoolean("papi.enabled")) {
             getLogger().info("PAPI detected, support enabled!");
             enablePAPISupport();
         }
@@ -87,50 +128,17 @@ public final class CharacterCard extends JavaPlugin {
 
     private void enableLandsSupport(){
         this.landsEnabled = true;
-        this.lands = new LandsHook(this);
+        this.lands = new LandsHook(this,config);
     }
 
     private void enablePAPISupport(){
         this.papiEnabled = true;
-        this.papi= new CharacterCardPlaceholderExpansion(this,db);
+        this.papi= new CharacterCardPlaceholderExpansion(this,db,config);
         papi.register();
     }
 
     private void enableEssentialsXSupport(){
         this.essentialsXEnabled = true;
-        this.essentials = new EssentialsXHook(this);
+        this.essentials = new EssentialsXHook(config);
     }
-
-    private void tryUpdateConfig(){
-        FileConfiguration config = this.getConfig();
-
-        if(!config.contains("version")){
-            config.set("version",100);
-            logger.logWarn("Version inside config file is missing, default value for 1.0.0 is set! If this was not empty before, God bless your config ;(");
-        }
-
-        int configVersion = config.getInt("version");
-        int pluginVersion = Integer.parseInt(getDescription().getVersion().replace(".",""));
-
-        if(pluginVersion == configVersion){
-            logger.logInfo("Config is up to date");
-            return;
-        }
-
-        if(configVersion < 110){
-
-            config.set("genderMessage","\\n<gold><bold>Gender: </bold><%gender%></gold>\\n");
-
-            ConfigurationSection essentialsSection = config.createSection("essentials");
-            essentialsSection.set("enabled",true);
-            essentialsSection.set("nickname",true);
-
-            logger.logInfo("Successfully added config section for version 1.1.0");
-
-        }
-        config.set("version",pluginVersion);
-        saveConfig();
-
-    }
-
 }

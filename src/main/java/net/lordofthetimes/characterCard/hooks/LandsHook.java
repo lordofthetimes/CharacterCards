@@ -1,5 +1,6 @@
 package net.lordofthetimes.characterCard.hooks;
 
+import dev.dejvokep.boostedyaml.YamlDocument;
 import me.angeschossen.lands.api.LandsIntegration;
 import me.angeschossen.lands.api.land.Land;
 import me.angeschossen.lands.api.nation.Nation;
@@ -15,11 +16,13 @@ public class LandsHook {
     public final LandsIntegration api;
     public final Boolean townsCard;
     public final Boolean nationsCard;
+    public final YamlDocument config;
 
-    public LandsHook(CharacterCard plugin) {
+    public LandsHook(CharacterCard plugin, YamlDocument config) {
         api = LandsIntegration.of(plugin);
-        townsCard = plugin.getConfig().getBoolean("lands.towns");
-        nationsCard = plugin.getConfig().getBoolean("lands.nations");
+        townsCard = config.getBoolean("lands.towns");
+        nationsCard = config.getBoolean("lands.nations");
+        this.config = config;
     }
 
     public String getTownNames(UUID uuid){
