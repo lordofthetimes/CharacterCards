@@ -4,7 +4,10 @@
 #                                                   #
 #####################################################
 
-# if you want to disable any of the messages, just set them to empty
+# This decides if plugin will check for new versions on reload or server start [default - true]
+checkForUpdate: true
+
+# if you want to disable any of the messages, just set them to empty string : ""
 
 # Message string that will be used for name, use <%name%> for a placeholder
 nameMessage: "<gold><bold>Name: </bold><%name%></gold>"
@@ -77,4 +80,4 @@ database:
 
 
 # DO NOT CHANGE VERSION - ESSENTIAL FOR CONFIG UPDATES
-version: 111
+config-version: 1

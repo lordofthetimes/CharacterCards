@@ -24,6 +24,11 @@ public class PlayerJoinListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
+
+        if(player.isOp() || player.hasPermission("charactercard.updateinfo")){
+            plugin.updateChecker.sendVersionPlayer(player);
+        }
+
         if(!player.hasPlayedBefore()){
             db.addPlayerDataCache(uuid,db.getDefaultDataCache());
             String def = "<gray>None</gray>";

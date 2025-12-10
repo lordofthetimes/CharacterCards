@@ -17,12 +17,14 @@ import net.lordofthetimes.characterCard.hooks.EssentialsXHook;
 import net.lordofthetimes.characterCard.hooks.LandsHook;
 import net.lordofthetimes.characterCard.listeners.PlayerJoinListener;
 import net.lordofthetimes.characterCard.utils.CharacterCardLogger;
+import net.lordofthetimes.characterCard.utils.UpdateChecker;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
 import static dev.dejvokep.boostedyaml.route.Route.fromSingleKey;
 
@@ -31,6 +33,9 @@ public final class CharacterCard extends JavaPlugin {
 
     public final CharacterCardLogger logger = new CharacterCardLogger(this.getLogger());
     public YamlDocument config;
+    private DatabaseManager db;
+    public UpdateChecker updateChecker;
+
     public boolean landsEnabled = false;
     public boolean papiEnabled = false;
     public boolean essentialsXEnabled = false;
@@ -39,7 +44,7 @@ public final class CharacterCard extends JavaPlugin {
     public CharacterCardPlaceholderExpansion papi;
     public EssentialsXHook essentials;
 
-    private DatabaseManager db;
+
 
 
     @Override
@@ -51,6 +56,7 @@ public final class CharacterCard extends JavaPlugin {
     public void onEnable() {
 
         String version = this.getPluginMeta().getVersion();
+        updateChecker = new UpdateChecker(this,version);
 
         logger.logInfo("Enabling CharacterCard v" + version);
         logger.logInfo("\n################################\n\n" +
@@ -69,7 +75,7 @@ public final class CharacterCard extends JavaPlugin {
                     LoaderSettings.DEFAULT,
                     DumperSettings.DEFAULT,
                     UpdaterSettings.builder()
-                            .setVersioning(new BasicVersioning("version"))
+                            .setVersioning(new BasicVersioning("config-version"))
                             .setOptionSorting(UpdaterSettings.OptionSorting.SORT_BY_DEFAULTS)
                             .build()
             );
@@ -113,8 +119,6 @@ public final class CharacterCard extends JavaPlugin {
             getLogger().info("PAPI detected, support enabled!");
             enablePAPISupport();
         }
-
-
         new CharacterCommand(this, db);
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(db,this),this);
 
