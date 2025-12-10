@@ -77,4 +77,4 @@ database:
 
 
 # DO NOT CHANGE VERSION - ESSENTIAL FOR CONFIG UPDATES
-version: 110
+version: 111

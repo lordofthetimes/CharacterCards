@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 
 public class DatabaseManager {
@@ -23,6 +25,8 @@ public class DatabaseManager {
     private final String path;
     private final List<String> columns = List.of("loreName","age","race","description","lore","gender");
     private final String defaultValue = "<gray>None</gray>";
+    private final ExecutorService dbExecutor =
+            Executors.newSingleThreadExecutor();
 
     private ConcurrentHashMap<UUID, ConcurrentHashMap<String,String>> playerDataCache = new ConcurrentHashMap<>();
 
@@ -121,7 +125,7 @@ public class DatabaseManager {
             } catch (SQLException e) {
                 logger.logErrorDB("Failed PRAGMA INFO for characters, this likely means a major issue with the database: " + e.getMessage());
             }
-        });
+        },dbExecutor);
     }
 
 
@@ -159,7 +163,7 @@ public class DatabaseManager {
             } catch (SQLException e) {
                 logger.logErrorDB("Failed to create character table : ", e);
             }
-        });
+        },dbExecutor);
     }
 
 
@@ -184,7 +188,7 @@ public class DatabaseManager {
                 logger.logErrorDB("Failed to fetch gender from characters for uuid "+ uuid.toString() + " : ", e);
             }
             return null;
-        });
+        },dbExecutor);
     }
 
     public CompletableFuture<String> getAge(UUID uuid){
@@ -207,7 +211,7 @@ public class DatabaseManager {
                 logger.logErrorDB("Failed to fetch age from characters for uuid "+ uuid.toString() + " : ", e);
             }
             return null;
-        });
+        },dbExecutor);
     }
 
     public CompletableFuture<ConcurrentHashMap<String,String>> getPlayerData(UUID uuid){
@@ -237,7 +241,7 @@ public class DatabaseManager {
                 logger.logErrorDB("Failed to fetch player data from characters for uuid "+ uuid.toString() + " : ", e);
             }
             return null;
-        });
+        },dbExecutor);
     }
 
     public CompletableFuture<ConcurrentHashMap<UUID, ConcurrentHashMap<String, String>>> getAllPlayersData() {
@@ -272,7 +276,7 @@ public class DatabaseManager {
             }
 
             return allData;
-        });
+        },dbExecutor);
     }
 
     public CompletableFuture<Boolean> resetPlayerData(UUID uuid){
@@ -298,7 +302,7 @@ public class DatabaseManager {
                 plugin.getLogger().log(Level.SEVERE, "Player data update failed for uuid : " + uuid, e);
             }
             return false;
-        });
+        },dbExecutor);
     }
 
     public CompletableFuture<Boolean> insertPlayerData(UUID uuid, String loreName, String lore, String age, String race, String description){
@@ -322,7 +326,7 @@ public class DatabaseManager {
                 logger.logErrorDB("Failed to insert data in characters for uuid "+ uuid.toString() + " : ", e);
             }
             return false;
-        });
+        },dbExecutor);
     }
 
     public CompletableFuture<Boolean> updateGender(String gender, UUID uuid){
@@ -339,15 +343,16 @@ public class DatabaseManager {
                     logger.logQuery(sql);
                 }
 
-                PreparedStatement query = connection.prepareStatement(sql);
-                query.setString(1,gender);
-                query.setString(2,uuid.toString());
-                return query.executeUpdate() > 0;
+                try(PreparedStatement query = connection.prepareStatement(sql)){
+                    query.setString(1,gender);
+                    query.setString(2,uuid.toString());
+                    return query.executeUpdate() > 0;
+                }
             } catch (SQLException e) {
                 logger.logErrorDB("Failed to UPDATE gender from characters for uuid "+ uuid.toString() + " : ", e);
             }
             return false;
-        });
+        },dbExecutor);
     }
 
     public CompletableFuture<Boolean> updateAge(String age, UUID uuid){
@@ -364,15 +369,16 @@ public class DatabaseManager {
                     logger.logQuery(sql);
                 }
 
-                PreparedStatement query = connection.prepareStatement(sql);
-                query.setString(1,age);
-                query.setString(2,uuid.toString());
-                return query.executeUpdate() > 0;
+                try(PreparedStatement query = connection.prepareStatement(sql)){
+                    query.setString(1,age);
+                    query.setString(2,uuid.toString());
+                    return query.executeUpdate() > 0;
+                }
             } catch (SQLException e) {
                 logger.logErrorDB("Failed to UPDATE age from characters for uuid "+ uuid.toString() + " : ", e);
             }
             return false;
-        });
+        },dbExecutor);
     }
 
     public CompletableFuture<Boolean> updateDescription(String description, UUID uuid){
@@ -389,15 +395,16 @@ public class DatabaseManager {
                     logger.logQuery(sql);
                 }
 
-                PreparedStatement query = connection.prepareStatement(sql);
-                query.setString(1,description);
-                query.setString(2,uuid.toString());
-                return query.executeUpdate() > 0;
+                try(PreparedStatement query = connection.prepareStatement(sql)){
+                    query.setString(1,description);
+                    query.setString(2,uuid.toString());
+                    return query.executeUpdate() > 0;
+                }
             } catch (SQLException e) {
                 logger.logErrorDB("Failed to UPDATE description from characters for uuid "+ uuid.toString() + " : ", e);
             }
             return false;
-        });
+        },dbExecutor);
     }
 
     public CompletableFuture<Boolean> updateRace(String race, UUID uuid){
@@ -414,15 +421,16 @@ public class DatabaseManager {
                     logger.logQuery(sql);
                 }
 
-                PreparedStatement query = connection.prepareStatement(sql);
-                query.setString(1,race);
-                query.setString(2,uuid.toString());
-                return query.executeUpdate() > 0;
+                try(PreparedStatement query = connection.prepareStatement(sql)){
+                    query.setString(1,race);
+                    query.setString(2,uuid.toString());
+                    return query.executeUpdate() > 0;
+                }
             } catch (SQLException e) {
                 logger.logErrorDB("Failed to UPDATE race from characters for uuid "+ uuid.toString() + " : ", e);
             }
             return false;
-        });
+        },dbExecutor);
     }
 
     public CompletableFuture<Boolean> updateLore(String lore, UUID uuid){
@@ -449,7 +457,7 @@ public class DatabaseManager {
                 logger.logErrorDB("Async updateLore failed for uuid " + uuid, e);
             }
             return false;
-        });
+        },dbExecutor);
     }
     public CompletableFuture<Boolean> updateName(String name, UUID uuid){
         return CompletableFuture.supplyAsync(() ->{
@@ -470,7 +478,7 @@ public class DatabaseManager {
                 logger.logErrorDB("Async updateName failed for uuid " + uuid, e);
             }
             return false;
-        });
+        },dbExecutor);
     }
 
     public Connection getConnection() {

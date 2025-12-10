@@ -28,6 +28,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.BiConsumer;
 
 public class CharacterCommand {
@@ -35,6 +37,8 @@ public class CharacterCommand {
     private final CharacterCard plugin;
     private final DatabaseManager db;
     private final HashMap<UUID, Long> lastUse = new HashMap<>();
+
+
 
     public CharacterCommand(CharacterCard plugin, DatabaseManager db) {
         this.plugin = plugin;
