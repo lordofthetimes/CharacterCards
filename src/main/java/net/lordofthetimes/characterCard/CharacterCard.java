@@ -56,7 +56,7 @@ public final class CharacterCard extends JavaPlugin {
     public void onEnable() {
 
         String version = this.getPluginMeta().getVersion();
-        updateChecker = new UpdateChecker(this,version);
+
 
         logger.logInfo("Enabling CharacterCard v" + version);
         logger.logInfo("\n################################\n\n" +
@@ -79,6 +79,7 @@ public final class CharacterCard extends JavaPlugin {
                             .setOptionSorting(UpdaterSettings.OptionSorting.SORT_BY_DEFAULTS)
                             .build()
             );
+            config.save();
             config.update();
         } catch (Exception e) {
             logger.logError("Failed to load or update config! Plugin is being disabled ",e);
@@ -86,6 +87,7 @@ public final class CharacterCard extends JavaPlugin {
         }
         logger.logInfo("Config loaded successfully!");
 
+        updateChecker = new UpdateChecker(this,version);
 
         if (getServer().getPluginManager().getPlugin("Lands") != null && config.getBoolean("lands.enabled")) {
             getLogger().info("Lands detected, support enabled!");
