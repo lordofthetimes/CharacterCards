@@ -25,6 +25,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
 
 import static dev.dejvokep.boostedyaml.route.Route.fromSingleKey;
 
@@ -79,7 +80,6 @@ public final class CharacterCard extends JavaPlugin {
                             .setOptionSorting(UpdaterSettings.OptionSorting.SORT_BY_DEFAULTS)
                             .build()
             );
-            config.save();
             config.update();
         } catch (Exception e) {
             logger.logError("Failed to load or update config! Plugin is being disabled ",e);
@@ -105,18 +105,13 @@ public final class CharacterCard extends JavaPlugin {
         db.connect();
         db.generateTables();
         db.tryAddColumns();
-        db.getAllPlayersData().thenAccept(allData -> {
-            if (allData != null) {
-                db.setPlayersDataCache(allData);
-                db.logger.logInfoDB("Loaded " + allData.size() + " player(s) into cache!");
-            } else {
-                db.logger.logErrorDB("Failed to load player data into cache!");
-                db.logger.logErrorDB("Failed to load player data into cache!");
-                db.logger.logErrorDB("Failed to load player data into cache!");
-                db.logger.logErrorDB("Failed to load player data into cache!");
-                this.onDisable();
-            }
-        });
+        try {
+            db.setPlayersDataCache(db.getAllPlayersData().get());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        }
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null && config.getBoolean("papi.enabled")) {
             getLogger().info("PAPI detected, support enabled!");
             enablePAPISupport();

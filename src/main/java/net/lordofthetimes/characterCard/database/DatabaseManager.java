@@ -3,10 +3,7 @@ package net.lordofthetimes.characterCard.database;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import net.lordofthetimes.characterCard.CharacterCard;
 import net.lordofthetimes.characterCard.utils.CharacterCardLogger;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.plugin.java.JavaPlugin;
 
-import javax.xml.transform.Result;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +20,8 @@ public class DatabaseManager {
     public final CharacterCardLogger logger;
     private final Boolean debug;
     private final String path;
-    private final List<String> columns = List.of("loreName","age","race","description","lore","gender");
+    private final String ageMode;
+    private final List<String> columns = List.of("loreName","age","race","description","lore","gender","joinTime");
     private final String defaultValue = "<gray>None</gray>";
     private final ExecutorService dbExecutor =
             Executors.newSingleThreadExecutor();
@@ -36,6 +34,7 @@ public class DatabaseManager {
         YamlDocument config = plugin.config;
         this.debug = config.getBoolean("database.debug");
         this.path = config.getString("database.path");
+        this.ageMode = config.getString("ageMode");
     }
 
     public void setPlayersDataCache(ConcurrentHashMap<UUID, ConcurrentHashMap<String,String>> map){
@@ -47,21 +46,23 @@ public class DatabaseManager {
     }
 
     public void clearPlayerDataCache(UUID uuid){
+        String joinTime = playerDataCache.get(uuid).get("joinTime");
         playerDataCache.remove(uuid);
-        playerDataCache.put(uuid, getDefaultDataCache());
+        playerDataCache.put(uuid, getDefaultDataCache(joinTime));
     }
     public void clearAllPlayerDataCache(){
         playerDataCache.clear();
     }
 
-    public ConcurrentHashMap<String, String> getDefaultDataCache(){
-        ConcurrentHashMap<String,String> map = new ConcurrentHashMap<>(5);
+    public ConcurrentHashMap<String, String> getDefaultDataCache(String joinTime){
+        ConcurrentHashMap<String,String> map = new ConcurrentHashMap<>();
         map.put("loreName",defaultValue);
         map.put("age",defaultValue);
         map.put("race",defaultValue);
         map.put("description",defaultValue);
         map.put("lore",defaultValue);
         map.put("gender",defaultValue);
+        map.put("joinTime",joinTime);
         return map;
     }
 
@@ -74,12 +75,12 @@ public class DatabaseManager {
     }
 
 
-    public CompletableFuture<Void> tryAddColumns(){
-        return CompletableFuture.runAsync(() -> {
+    public void tryAddColumns(){
+        CompletableFuture.runAsync(() -> {
             List<String> mutableColumns = new ArrayList<>(List.copyOf(columns));
             String sql = "PRAGMA table_info(characters)";
 
-            if(debug){
+            if (debug) {
                 logger.logQuery(sql);
             }
 
@@ -89,12 +90,13 @@ public class DatabaseManager {
                 while (rs.next()) {
                     mutableColumns.remove(rs.getString("name"));
                 }
-                if(!mutableColumns.isEmpty()){
-                    for(String column : mutableColumns){
+                if (!mutableColumns.isEmpty()) {
+                    for (String column : mutableColumns) {
                         logger.logWarnDB("Column " + column + " is missing. The missing column will be created");
                         String columnSql = "ALTER TABLE characters ADD COLUMN " + column + " TEXT";
+                        if(column.equals("joinTime")) columnSql = columnSql.replace("TEXT","INTEGER");
 
-                        if(debug){
+                        if (debug) {
                             logger.logQuery(columnSql);
                         }
 
@@ -104,28 +106,32 @@ public class DatabaseManager {
 
                             String updateSql = "UPDATE characters SET " + column + " = ?";
 
-                            if(debug){
+                            if (debug) {
                                 logger.logQuery(updateSql);
                             }
 
-                            try(PreparedStatement updateQuery = connection.prepareStatement(updateSql)){
-                                updateQuery.setString(1,defaultValue);
+                            try (PreparedStatement updateQuery = connection.prepareStatement(updateSql)) {
+                                if(column.equals("joinTime")){
+                                    updateQuery.setLong(1, System.currentTimeMillis());
+                                }
+                                else{
+                                    updateQuery.setString(1, defaultValue);
+                                }
                                 updateQuery.executeUpdate();
                                 logger.logInfo("Successfully filled in default data for all players in column : " + column);
-                            }
-                            catch (SQLException e) {
+                            } catch (SQLException e) {
                                 logger.logErrorDB("Failed to insert default columns: " + e.getMessage());
                             }
 
                         } catch (SQLException e) {
-                        logger.logErrorDB("Failed to add column: " + e.getMessage());
+                            logger.logErrorDB("Failed to add column: " + e.getMessage());
                         }
                     }
                 }
             } catch (SQLException e) {
                 logger.logErrorDB("Failed PRAGMA INFO for characters, this likely means a major issue with the database: " + e.getMessage());
             }
-        },dbExecutor);
+        }, dbExecutor);
     }
 
 
@@ -133,27 +139,33 @@ public class DatabaseManager {
         try {
             String url = "jdbc:sqlite:" + path;
             connection = DriverManager.getConnection(url);
+            if(connection == null){
+                throw new SQLException("SQLite connection is null!");
+            }
             logger.logInfoDB("Connected to SQLite database!");
         } catch (SQLException e) {
-            logger.logErrorDB("Failed to connect to SQLite database! ",e);
+            connection = null;
+            logger.logErrorDB("Failed to connect to SQLite database!", e);
+            throw new IllegalStateException("Database connection failed, plugin cannot start.");
         }
     }
 
-    public CompletableFuture<Void> generateTables(){
-        return CompletableFuture.runAsync(() -> {
+    public void generateTables(){
+        CompletableFuture.runAsync(() -> {
             String sql = """
-            CREATE TABLE IF NOT EXISTS characters (
-                uuid TEXT PRIMARY KEY,
-                loreName TEXT,
-                age TEXT,
-                gender TEXT,
-                race TEXT,
-                description TEXT,
-                lore TEXT
-            );
-            """;
+                    CREATE TABLE IF NOT EXISTS characters (
+                        uuid TEXT PRIMARY KEY,
+                        loreName TEXT,
+                        age TEXT,
+                        gender TEXT,
+                        race TEXT,
+                        description TEXT,
+                        lore TEXT
+                        joinTime INTEGER
+                    );
+                    """;
 
-            if(debug){
+            if (debug) {
                 logger.logQuery(sql);
             }
 
@@ -163,7 +175,7 @@ public class DatabaseManager {
             } catch (SQLException e) {
                 logger.logErrorDB("Failed to create character table : ", e);
             }
-        },dbExecutor);
+        }, dbExecutor);
     }
 
 
@@ -248,7 +260,7 @@ public class DatabaseManager {
         return CompletableFuture.supplyAsync(() -> {
             ConcurrentHashMap<UUID, ConcurrentHashMap<String, String>> allData = new ConcurrentHashMap<>();
 
-            String sql = "SELECT uuid, lore, loreName, age, race, description,gender FROM characters";
+            String sql = "SELECT uuid, lore, loreName, age, race, description,gender,joinTime FROM characters";
 
             if(debug){
                 logger.logQuery(sql);
@@ -267,6 +279,7 @@ public class DatabaseManager {
                     playerData.put("race", rs.getString("race"));
                     playerData.put("description", rs.getString("description"));
                     playerData.put("gender", rs.getString("gender"));
+                    playerData.put("joinTime", String.valueOf(rs.getLong("joinTime")));
 
                     allData.put(uuid, playerData);
                 }
@@ -305,9 +318,9 @@ public class DatabaseManager {
         },dbExecutor);
     }
 
-    public CompletableFuture<Boolean> insertPlayerData(UUID uuid, String loreName, String lore, String age, String race, String description){
+    public CompletableFuture<Boolean> insertPlayerData(UUID uuid, String loreName, String lore, String age, String race, String description,Long joinTime){
         return CompletableFuture.supplyAsync(() ->{
-            String sql = "INSERT INTO characters(uuid,loreName,lore,age,race,description,gender) VALUES(?,?,?,?,?,?,?)";
+            String sql = "INSERT INTO characters(uuid,loreName,lore,age,race,description,gender,joinTIme) VALUES(?,?,?,?,?,?,?,?)";
 
             if(debug){
                 logger.logQuery(sql);
@@ -320,6 +333,8 @@ public class DatabaseManager {
                 query.setString(4,age);
                 query.setString(5,race);
                 query.setString(6,description);
+                query.setString(7,description);
+                query.setLong(8,joinTime);
 
                 return query.executeUpdate() > 0;
             } catch (SQLException e){

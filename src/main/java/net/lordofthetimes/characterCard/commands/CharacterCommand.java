@@ -37,13 +37,15 @@ public class CharacterCommand {
     private final CharacterCard plugin;
     private final DatabaseManager db;
     private final HashMap<UUID, Long> lastUse = new HashMap<>();
+    private final String ageMode;
 
 
 
     public CharacterCommand(CharacterCard plugin, DatabaseManager db) {
         this.plugin = plugin;
         this.db = db;
-        new CommandAPICommand("character")
+        this.ageMode = plugin.config.getString("ageMode");
+        CommandAPICommand character =  new CommandAPICommand("character")
                 .withPermission("charactercard.character")
                 .withAliases("profile", "card")
                 .withSubcommand(
@@ -66,41 +68,6 @@ public class CharacterCommand {
                             })
                 )
                 .withSubcommand(
-                        new CommandAPICommand("set")
-                                .withPermission("charactercard.character.set")
-                                .withSubcommand(
-                                        new CommandAPICommand("lore")
-                                                .withPermission("charactercard.character.set")
-                                                .withArguments(new GreedyStringArgument("lore")
-                                                )
-                                                .executes((sender,args) -> { if(sender instanceof Player player) setLore(player,(String) args.get("lore")); })
-                                ).withSubcommand(
-                                        new CommandAPICommand("name")
-                                                .withPermission("charactercard.character.set")
-                                                .withArguments(new GreedyStringArgument("name"))
-                                                .executes((sender,args) -> { if(sender instanceof Player player) setName(player,(String) args.get("name")); })
-                                ).withSubcommand(
-                                        new CommandAPICommand("age")
-                                                .withPermission("charactercard.character.set")
-                                                .withArguments(new GreedyStringArgument("age"))
-                                                .executes((sender,args) -> { if(sender instanceof Player player) setAge(player,(String) args.get("age")); })
-                                ).withSubcommand(
-                                        new CommandAPICommand("race")
-                                                .withPermission("charactercard.character.set")
-                                                .withArguments(new GreedyStringArgument("race"))
-                                                .executes((sender,args) -> { if(sender instanceof Player player) setRace(player,(String) args.get("race")); })
-                                ).withSubcommand(
-                                        new CommandAPICommand("description")
-                                                .withPermission("charactercard.character.set")
-                                                .withArguments(new GreedyStringArgument("description"))
-                                                .executes((sender,args) -> { if(sender instanceof Player player) setDescription(player,(String) args.get("description")); })
-                                ).withSubcommand(
-                                        new CommandAPICommand("gender")
-                                                .withPermission("charactercard.character.set")
-                                                .withArguments(new GreedyStringArgument("gender"))
-                                                .executes((sender,args) -> { if(sender instanceof Player player) setGender(player,(String) args.get("gender")); })
-                                )
-                ).withSubcommand(
                         new CommandAPICommand("chat")
                                 .withPermission("charactercard.character.chat")
                                 .withOptionalArguments(new StringArgument("player")
@@ -153,7 +120,52 @@ public class CharacterCommand {
                         else{
                             MessageSender.sendCharacterCard(sender.sender(),getHelp());
                         }
-                }).register();
+                });
+
+
+        CommandAPICommand characterSet = new CommandAPICommand("set")
+                .withPermission("charactercard.character.set")
+                .withSubcommand(
+                        new CommandAPICommand("lore")
+                                .withPermission("charactercard.character.set")
+                                .withArguments(new GreedyStringArgument("lore")
+                                )
+                                .executes((sender,args) -> { if(sender instanceof Player player) setLore(player,(String) args.get("lore")); })
+                ).withSubcommand(
+                        new CommandAPICommand("name")
+                                .withPermission("charactercard.character.set")
+                                .withArguments(new GreedyStringArgument("name"))
+                                .executes((sender,args) -> { if(sender instanceof Player player) setName(player,(String) args.get("name")); })
+                ).withSubcommand(
+                        new CommandAPICommand("race")
+                                .withPermission("charactercard.character.set")
+                                .withArguments(new GreedyStringArgument("race"))
+                                .executes((sender,args) -> { if(sender instanceof Player player) setRace(player,(String) args.get("race")); })
+                ).withSubcommand(
+                        new CommandAPICommand("description")
+                                .withPermission("charactercard.character.set")
+                                .withArguments(new GreedyStringArgument("description"))
+                                .executes((sender,args) -> { if(sender instanceof Player player) setDescription(player,(String) args.get("description")); })
+                ).withSubcommand(
+                        new CommandAPICommand("gender")
+                                .withPermission("charactercard.character.set")
+                                .withArguments(new GreedyStringArgument("gender"))
+                                .executes((sender,args) -> { if(sender instanceof Player player) setGender(player,(String) args.get("gender")); })
+                );
+
+
+
+            if(plugin.config.getString("ageMode").equals("SET")){
+                characterSet.withSubcommand(
+                        new CommandAPICommand("age")
+                                .withPermission("charactercard.character.set")
+                                .withArguments(new GreedyStringArgument("age"))
+                                .executes((sender,args) -> { if(sender instanceof Player player) setAge(player,(String) args.get("age")); })
+                );
+            }
+
+            character.withSubcommand(characterSet).register();
+
     }
 
 
@@ -265,15 +277,23 @@ public class CharacterCommand {
         String race = data.get("race");
         String gender = data.get("gender");
         String description = data.get("description");
+        long joinTime = Long.parseLong(data.get("joinTime"));
 
         YamlDocument config = plugin.config;
 
         ItemStack bookItem = new ItemStack(Material.WRITTEN_BOOK);
         BookMeta meta = (BookMeta) bookItem.getItemMeta();
 
-        String page1String = config.getString("nameMessage").replace("<%name%>",name) +
-                config.getString("ageMessage").replace("<%age%>",age) +
-                config.getString("raceMessage").replace("<%race%>",race) +
+        String page1String = config.getString("nameMessage").replace("<%name%>",name);
+
+        if(ageMode.equals("SET")){
+            page1String += config.getString("ageMessage").replace("<%age%>",age);
+        }
+        else if(ageMode.equals("JOIN")){
+            page1String += config.getString("ageMessage").replace("<%age%>",formatDuration(System.currentTimeMillis() - joinTime));
+        }
+
+        page1String +=  config.getString("raceMessage").replace("<%race%>",race) +
                 config.getString("genderMessage").replace("<%gender%>",gender);
         if (plugin.landsEnabled) {
 
@@ -325,14 +345,27 @@ public class CharacterCommand {
         String gender = data.get("gender");
         String description = data.get("description");
         YamlDocument config = plugin.config;
-
+        Long joinTime = Long.parseLong(data.get("joinTime"));
         List<String> part = new ArrayList<String >();
         part.add(
                 "<gold><bold>———===[ Character Card ]===———</bold></gold>\n" +
-                config.getString("nameMessage").replace("<%name%>",name) +
-                config.getString("ageMessage").replace("<%age%>",age) +
+                        config.getString("nameMessage").replace("<%name%>",name)
+        );
+
+        if(ageMode.equals("SET")){
+            part.add(
+                    config.getString("ageMessage").replace("<%age%>",age)
+            );
+        }
+        else if(ageMode.equals("JOIN")) {
+            part.add(
+                    config.getString("ageMessage").replace("<%age%>",formatDuration(System.currentTimeMillis() - joinTime))
+            );
+        }
+
+        part.add(
                 config.getString("raceMessage").replace("<%race%>",race) +
-                config.getString("genderMessage").replace("<%gender%>",gender)
+                        config.getString("genderMessage").replace("<%gender%>",gender)
         );
         if(plugin.landsEnabled){
 
@@ -424,4 +457,22 @@ public class CharacterCommand {
         lastUse.put(player.getUniqueId(),System.currentTimeMillis());
         return false;
     }
+
+    public static String formatDuration(long millis) {
+        long totalDays = millis / (1000L * 60 * 60 * 24);
+
+        long years  = totalDays / 365;
+        long months = (totalDays % 365) / 30;
+        long days   = (totalDays % 365) % 30;
+
+        StringBuilder sb = new StringBuilder();
+
+        if (years > 0)  sb.append(years).append(" year").append(years == 1 ? "" : "s").append(" ");
+        if (months > 0) sb.append(months).append(" month").append(months == 1 ? "" : "s").append(" ");
+        if (days > 0 || sb.isEmpty())
+            sb.append(days).append(" day").append(days == 1 ? "" : "s");
+
+        return sb.toString().trim();
+    }
+
 }

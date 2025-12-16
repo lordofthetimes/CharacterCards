@@ -28,28 +28,18 @@ public class PlayerJoinListener implements Listener {
         if(player.isOp() || player.hasPermission("charactercard.updateinfo")){
             plugin.updateChecker.sendVersionPlayer(player);
         }
-
-        if(!player.hasPlayedBefore()){
-            db.addPlayerDataCache(uuid,db.getDefaultDataCache());
+        if(db.getPlayerDataCache(uuid) == null){
             String def = "<gray>None</gray>";
-            db.insertPlayerData(uuid,def,def,def,def,def)
+            Long joinTime = System.currentTimeMillis();
+            db.insertPlayerData(uuid,def,def,def,def,def,joinTime)
                     .thenAccept(success -> {
-                        if (!success) {
+                        if (success) {
+                            db.addPlayerDataCache(uuid,db.getDefaultDataCache(String.valueOf(joinTime)));
+                        }
+                        else{
                             plugin.getLogger().warning("Failed to insert default data for uuid : " + uuid);
                         }
                     });
-        }
-        else{
-            if(db.getPlayerDataCache(uuid) == null){
-                db.addPlayerDataCache(uuid,db.getDefaultDataCache());
-                String def = "<gray>None</gray>";
-                db.insertPlayerData(uuid,def,def,def,def,def)
-                        .thenAccept(success -> {
-                            if (!success) {
-                                plugin.getLogger().warning("Failed to insert default data for uuid : " + uuid);
-                            }
-                        });
-            }
         }
     }
 }

@@ -12,8 +12,13 @@ checkForUpdate: true
 # Message string that will be used for name, use <%name%> for a placeholder
 nameMessage: "<gold><bold>Name: </bold><%name%></gold>"
 
+# Should age be available to set for players or should it be based on when the player joined [default - SET] (options : SET,JOIN)
+# This setting is not backwards compatible. If you used SET, all previous players will not have age set based on join time
+ageMode: SET
+
 # Message string that will be used for age, use <%age%> for a placeholder
 ageMessage: "\n<gold><bold>Age: </bold><%age%></gold>"
+
 
 # Message string that will be used for race, use <%race%> for a placeholder
 raceMessage: "\n<gold><bold>Race: </bold><%race%></gold>"
@@ -80,4 +85,4 @@ database:
 
 
 # DO NOT CHANGE VERSION - ESSENTIAL FOR CONFIG UPDATES
-config-version: 1
+config-version: 2

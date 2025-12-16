@@ -55,7 +55,7 @@ public class UpdateChecker {
     }
 
     public void sendVersionConsole(){
-        if(checkForUpdate) return;
+        if(!checkForUpdate) return;
         if(isNotLatest(version,latestVersion)){
             plugin.logger.logInfo("Current version of Character Cards is not the latest!");
             plugin.logger.logInfo("Running version " + version + " when latest version is " + latestVersion + "!");
@@ -67,7 +67,7 @@ public class UpdateChecker {
         }
     }
     public void sendVersionPlayer(Player player){
-        if(checkForUpdate) return;
+        if(!checkForUpdate) return;
         if(isNotLatest(version,latestVersion)){
             MessageSender.sendMessage(player,"<red><bold>Current version of Character Cards is not the latest!</bold></red>");
             MessageSender.sendMessage(player,"<yellow>Running version<red><bold> " + version + "</bold></red> when latest version is<green><bold> " + latestVersion + "</bold></green></yellow>");
