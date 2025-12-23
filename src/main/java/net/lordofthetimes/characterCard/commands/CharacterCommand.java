@@ -105,20 +105,20 @@ public class CharacterCommand {
                                 .withPermission("charactercard.character")
                                 .executes((sender)->{
                                     if(sender instanceof  Player player && !isOnCooldown(player)){
-                                        MessageSender.sendCharacterCard(sender.sender(),getHelp());
+                                        MessageSender.sendMessageNoPrefix(sender.sender(),getHelp());
                                     }
                                     else{
-                                        MessageSender.sendCharacterCard(sender.sender(),getHelp());
+                                        MessageSender.sendMessageNoPrefix(sender.sender(),getHelp());
                                     }
 
                                 })
                 )
                 .executes((sender)->{
                         if(sender instanceof  Player player && !isOnCooldown(player)){
-                            MessageSender.sendCharacterCard(sender.sender(),getHelp());
+                            MessageSender.sendMessageNoPrefix(sender.sender(),getHelp());
                         }
                         else{
-                            MessageSender.sendCharacterCard(sender.sender(),getHelp());
+                            MessageSender.sendMessageNoPrefix(sender.sender(),getHelp());
                         }
                 });
 
@@ -389,7 +389,7 @@ public class CharacterCommand {
             part = PlaceholderAPI.setPlaceholders(offlinePlayer,part);
         }
 
-        MessageSender.sendCharacterCard(viewer,String.join("",part));
+        MessageSender.sendMessageNoPrefix(viewer,String.join("",part));
     }
 
     private void clearData(CommandSender sender, OfflinePlayer player){

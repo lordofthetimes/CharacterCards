@@ -55,7 +55,7 @@ public class LocalCommand {
                     UUID uuid = player.getUniqueId();
                     bypass.put(uuid,!bypass.get(uuid));
                     String state = bypass.get(uuid) ? "enabled" : "disabled";
-                    MessageSender.sendMessage(player,"<yellow> Local chat spy mode is not " + state + "!</yellow>");
+                    MessageSender.sendMessage(player,"<yellow> Local chat spy mode is now " + state + "!</yellow>");
                 }).register();
     }
 
