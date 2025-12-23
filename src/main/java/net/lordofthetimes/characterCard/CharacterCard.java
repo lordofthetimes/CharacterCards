@@ -10,11 +10,13 @@ import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import net.lordofthetimes.characterCard.commands.CharacterCommand;
+import net.lordofthetimes.characterCard.commands.LocalCommand;
 import net.lordofthetimes.characterCard.database.DatabaseManager;
 
 import net.lordofthetimes.characterCard.hooks.CharacterCardPlaceholderExpansion;
 import net.lordofthetimes.characterCard.hooks.EssentialsXHook;
 import net.lordofthetimes.characterCard.hooks.LandsHook;
+import net.lordofthetimes.characterCard.listeners.LocalManager;
 import net.lordofthetimes.characterCard.listeners.PlayerJoinListener;
 import net.lordofthetimes.characterCard.utils.CharacterCardLogger;
 import net.lordofthetimes.characterCard.utils.UpdateChecker;
@@ -44,6 +46,12 @@ public final class CharacterCard extends JavaPlugin {
     public LandsHook lands;
     public CharacterCardPlaceholderExpansion papi;
     public EssentialsXHook essentials;
+
+    public LocalCommand localCommand;
+    public CharacterCommand characterCommand;
+
+    public PlayerJoinListener playerJoinListener;
+    public LocalManager localManager;
 
 
 
@@ -116,8 +124,14 @@ public final class CharacterCard extends JavaPlugin {
             getLogger().info("PAPI detected, support enabled!");
             enablePAPISupport();
         }
-        new CharacterCommand(this, db);
-        getServer().getPluginManager().registerEvents(new PlayerJoinListener(db,this),this);
+        characterCommand = new CharacterCommand(this, db);
+        localCommand = new LocalCommand(this);
+
+        playerJoinListener = new PlayerJoinListener(db,this);
+        localManager = new LocalManager(this);
+
+        getServer().getPluginManager().registerEvents(playerJoinListener,this);
+        getServer().getPluginManager().registerEvents(localManager,this);
 
     }
 

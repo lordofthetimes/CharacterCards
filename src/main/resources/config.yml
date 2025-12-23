@@ -76,6 +76,20 @@ essentials:
 # ╔                                              ╗
 # ║             DATABASE SETTINGS                ║
 # ╚                                              ╝
+localChat:
+  # Enable local chat: [default - true]
+  enabled: true
+  # Prefix used before every local chat message
+  prefix: "<green><bold>[Local]</bold></green> "
+  # What should be used in place of name, supports papi placeholders
+  # Built in placeholders: <%player_name%> - player name, <%nickname%> - essentials nickname if support enabled
+  name: "<%player_name%>: "
+  # Distance of local chat [default - 100]
+  distance: 100
+
+# ╔                                              ╗
+# ║             DATABASE SETTINGS                ║
+# ╚                                              ╝
 database:
   # Enables debug messages
   debug: false
@@ -85,4 +99,4 @@ database:
 
 
 # DO NOT CHANGE VERSION - ESSENTIAL FOR CONFIG UPDATES
-config-version: 2
+config-version: 3

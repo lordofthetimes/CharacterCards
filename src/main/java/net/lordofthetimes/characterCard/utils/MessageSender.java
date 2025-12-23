@@ -26,6 +26,10 @@ public class MessageSender {
         sender.sendMessage(MiniMessage.miniMessage().deserialize("<gold><bold>[CC]</bold></gold> "+ message));
     }
 
+    public static void sendMessageNoPrefix(CommandSender sender, String message){
+        sender.sendMessage(MiniMessage.miniMessage().deserialize(message));
+    }
+
     public static void sendCharacterCard(CommandSender sender, String message){
         sender.sendMessage(MiniMessage.miniMessage().deserialize(message));
     }

@@ -11,6 +11,8 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
+import java.util.UUID;
+
 public class EssentialsXHook {
 
     public final Essentials essentials;
@@ -34,6 +36,11 @@ public class EssentialsXHook {
                 .replaceAll("(?i)[§&][0-9A-FK-ORX]", "");
 
         user.setNickname(cleanName);
+    }
+
+    public String getNickname(UUID uuid){
+        User user = essentials.getUser(uuid);
+        return user.getNickname();
     }
 
 }
