@@ -3,6 +3,9 @@ package net.lordofthetimes.characterCard.commands;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.GreedyStringArgument;
 import me.clip.placeholderapi.PlaceholderAPI;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.lordofthetimes.characterCard.CharacterCard;
 import net.lordofthetimes.characterCard.utils.MessageSender;
 import org.bukkit.Bukkit;
@@ -43,7 +46,7 @@ public class LocalCommand {
                     }
                     else{
                         String message = args.get("message").toString();
-                        sendLocal(player,message);
+                        sendLocal(player, LegacyComponentSerializer.legacySection().deserialize(message));
                     }
                 }).register();
 
@@ -59,9 +62,9 @@ public class LocalCommand {
                 }).register();
     }
 
-    public void sendLocal(Player player, String message){
+    public void sendLocal(Player player, Component message){
 
-        String finalMessage = prefix + name + message;
+        String finalMessage = prefix + name;
 
         if (plugin.essentialsXEnabled) {
             String nickname = plugin.essentials.getNickname(player.getUniqueId());
@@ -84,7 +87,7 @@ public class LocalCommand {
                     (onlinePlayer.hasPermission("charactercard.local.spy")
                             && bypass.get(onlinePlayer.getUniqueId())
                     )){
-                MessageSender.sendMessageNoPrefix(onlinePlayer,finalMessage);
+                onlinePlayer.sendMessage(MiniMessage.miniMessage().deserialize(finalMessage).append(message));
             }
         }
     }

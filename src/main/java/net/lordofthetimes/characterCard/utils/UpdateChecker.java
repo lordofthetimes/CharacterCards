@@ -3,6 +3,7 @@ package net.lordofthetimes.characterCard.utils;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 import net.lordofthetimes.characterCard.CharacterCard;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.net.URI;
@@ -25,33 +26,36 @@ public class UpdateChecker {
         this.plugin = plugin;
         this.version = version;
         checkForUpdate = plugin.config.getBoolean("checkForUpdate");
-        if(checkForUpdate) getInfo().thenRun(() -> sendVersionConsole());
+        getInfo();
+        sendVersionConsole();
     }
 
-    public CompletableFuture<Void> getInfo() {
-        return CompletableFuture.runAsync(() -> {
-            try{
-                HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create("https://api.modrinth.com/v2/project/character-cards/version"))
-                        .header("User-Agent", "lordofthetimes/CharacterCards" + version + " (lordofthetimes100@gmail.com)")
-                        .GET()
-                        .build();;
-                HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+    public void getInfo() {
+        try{
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.modrinth.com/v2/project/character-cards/version"))
+                    .header("User-Agent", "lordofthetimes/CharacterCards" + version + " (lordofthetimes100@gmail.com)")
+                    .GET()
+                    .build();;
+            HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
 
-                JsonArray versionsArray = JsonParser.parseString(response.body()).getAsJsonArray();
-
-                if (!versionsArray.isEmpty()) {
-                    var latestVersionObject = versionsArray.get(0).getAsJsonObject();
-                    latestVersion = latestVersionObject.get("version_number").getAsString();
-                    changelog = latestVersionObject.get("changelog").getAsString()
+            JsonArray versionsArray = JsonParser.parseString(response.body()).getAsJsonArray();
+            if (!versionsArray.isEmpty()) {
+                var latestVersionObject = versionsArray.get(0).getAsJsonObject();
+                latestVersion = latestVersionObject.get("version_number").getAsString();
+                changelog = latestVersionObject.get("changelog").getAsString()
                             .replaceAll("(\\*\\*|#+|`{3})", "")
                             .replaceAll("\\n{2,}", "\n");
-                }
             }
-            catch(Exception e){
-                plugin.logger.logError("Failed to fetch latest version info",e);
+            else{
+                throw new RuntimeException("Returned response is empty!");
             }
-        });
+        }
+        catch(Exception e){
+            plugin.logger.logError("Failed to fetch latest version info! Is modrinth api down?",e);
+            latestVersion = plugin.getPluginMeta().getVersion();
+            changelog = "";
+        }
     }
 
     public void sendVersionConsole(){
@@ -84,17 +88,18 @@ public class UpdateChecker {
         }
     }
 
-    private boolean isNotLatest(String current,String latest){
-        int[] splitCurrent = Arrays.stream(current.split("\\."))
-                .mapToInt(Integer::parseInt)
-                .toArray();
-        int[] splitLatest = Arrays.stream(latest.split("\\."))
-                .mapToInt(Integer::parseInt)
-                .toArray();
+    private boolean isNotLatest(String current, String latest){
+        String[] splitCurrent = current.split("\\.");
+        String[] splitLatest = latest.split("\\.");
 
-        if(splitCurrent[0] < splitLatest[0]) return true;
-        if(splitCurrent[1] < splitLatest[1]) return true;
-        if(splitCurrent[2] < splitLatest[2]) return true;
+        for (int i = 0; i < 3; i++) {
+            int curSeg = Integer.parseInt(splitCurrent[i]);
+            int latSeg = Integer.parseInt(splitLatest[i]);
+
+            if (curSeg < latSeg) return true;
+            if (curSeg > latSeg) return false;
+        }
+
         return false;
     }
 }

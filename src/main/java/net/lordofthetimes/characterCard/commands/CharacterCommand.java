@@ -105,20 +105,20 @@ public class CharacterCommand {
                                 .withPermission("charactercard.character")
                                 .executes((sender)->{
                                     if(sender instanceof  Player player && !isOnCooldown(player)){
-                                        MessageSender.sendMessageNoPrefix(sender.sender(),getHelp());
+                                        MessageSender.sendMessageNoPrefix(sender.sender(),getHelp(player));
                                     }
                                     else{
-                                        MessageSender.sendMessageNoPrefix(sender.sender(),getHelp());
+                                        MessageSender.sendMessageNoPrefix(sender.sender(),getHelp(sender.sender()));
                                     }
 
                                 })
                 )
                 .executes((sender)->{
                         if(sender instanceof  Player player && !isOnCooldown(player)){
-                            MessageSender.sendMessageNoPrefix(sender.sender(),getHelp());
+                            MessageSender.sendMessageNoPrefix(sender.sender(),getHelp(player));
                         }
                         else{
-                            MessageSender.sendMessageNoPrefix(sender.sender(),getHelp());
+                            MessageSender.sendMessageNoPrefix(sender.sender(),getHelp(sender.sender()));
                         }
                 });
 
@@ -427,17 +427,33 @@ public class CharacterCommand {
                         .toArray(String[]::new));
     }
 
-    private String getHelp(){
-        return  "<gold><bold>———===[ <#FFD54F>Character Card</#FFD54F> ]===———</bold></gold>\n" +
+    private String getHelp(CommandSender sender){
+        String help =
+                "<gold><bold>———===[ <#FFD54F>Character Card</#FFD54F> ]===———</bold></gold>\n" +
                 "<yellow><bold>Version: <white>" + plugin.getDescription().getVersion() + "</white></bold></yellow>\n" +
                 "<yellow><bold>By: <white>" + String.join(", ", plugin.getDescription().getAuthors()) + "</white></bold></yellow>\n" +
                 "<yellow><bold>Aliases: <green>profile</green> , <green>card</green></bold></yellow>\n" +
-                "<yellow><bold>Commands:</bold></yellow>\n" +
-                "<green><bold>/character set</bold></green>\n" +
-                "<green><bold>/character book</bold></green>\n" +
-                "<green><bold>/character chat</bold></green>\n" +
-                "<green><bold>/character clear</bold></green>\n" +
-                "<gold><bold>————=====================————</bold></gold>";
+                "<yellow><bold>Commands:</bold></yellow>\n";
+        if(sender.hasPermission("charactercard.character.set")){
+            help += "<green><bold>/character set</bold></green>\n";
+        }
+        if(sender.hasPermission("charactercard.character.book")){
+            help += "<green><bold>/character book</bold></green>\n";
+        }
+        if(sender.hasPermission("charactercard.character.chat")){
+            help += "<green><bold>/character chat</bold></green>\n";
+        }
+        if(sender.hasPermission("charactercard.character.clear")){
+            help += "<green><bold>/character clear</bold></green>\n";
+        }
+        if(sender.hasPermission("charactercard.local.use")){
+            help += "<green><bold>/local</bold></green>\n";
+        }
+        if(sender.hasPermission("charactercard.local.spy")){
+            help += "<green><bold>/localspy</bold></green>\n";
+        }
+        help += "<gold><bold>————=====================————</bold></gold>";
+        return help;
     }
 
     private Boolean isOnCooldown(Player player){
