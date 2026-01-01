@@ -15,21 +15,15 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
-import org.jetbrains.annotations.NotNull;
 
-import javax.swing.text.StyledEditorKit;
-import java.io.Console;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.function.BiConsumer;
 
 public class CharacterCommand {
@@ -177,7 +171,7 @@ public class CharacterCommand {
             plugin.essentials.updateNickname(player,name);
         }
 
-        db.updateName(name,player.getUniqueId()).thenAccept(success ->{
+        db.updateName(name.replaceAll("&(#[0-9a-fA-F]{6}|[0-9a-fk-orA-FK-OR])", ""),player.getUniqueId()).thenAccept(success ->{
             Bukkit.getScheduler().runTask(plugin, () -> {
                 if (success) {
                     MessageSender.sendMessage(player,"<green>Character name has been set</green>");
@@ -192,7 +186,7 @@ public class CharacterCommand {
 
         if(isOnCooldown(player)) return;
 
-        db.updateLore(lore,player.getUniqueId()).thenAccept(success ->{
+        db.updateLore(lore.replaceAll("&(#[0-9a-fA-F]{6}|[0-9a-fk-orA-FK-OR])", ""),player.getUniqueId()).thenAccept(success ->{
             Bukkit.getScheduler().runTask(plugin, () -> {
                 if(success) {
                     MessageSender.sendMessage(player,"<green>Character lore has been set</green>");
@@ -207,7 +201,7 @@ public class CharacterCommand {
 
         if(isOnCooldown(player)) return;
 
-        db.updateAge(age,player.getUniqueId()).thenAccept(success ->{
+        db.updateAge(age.replaceAll("&(#[0-9a-fA-F]{6}|[0-9a-fk-orA-FK-OR])", ""),player.getUniqueId()).thenAccept(success ->{
             Bukkit.getScheduler().runTask(plugin, () -> {
                 if(success) {
                     MessageSender.sendMessage(player,"<green>Character age has been set</green>");
@@ -222,7 +216,7 @@ public class CharacterCommand {
 
         if(isOnCooldown(player)) return;
 
-        db.updateRace(updateRace,player.getUniqueId()).thenAccept(success ->{
+        db.updateRace(updateRace.replaceAll("&(#[0-9a-fA-F]{6}|[0-9a-fk-orA-FK-OR])", ""),player.getUniqueId()).thenAccept(success ->{
             Bukkit.getScheduler().runTask(plugin, () -> {
                 if(success) {
                     MessageSender.sendMessage(player,"<green>Character race has been set</green>");
@@ -237,7 +231,7 @@ public class CharacterCommand {
 
         if(isOnCooldown(player)) return;
 
-        db.updateDescription(description,player.getUniqueId()).thenAccept(success ->{
+        db.updateDescription(description.replaceAll("&(#[0-9a-fA-F]{6}|[0-9a-fk-orA-FK-OR])", ""),player.getUniqueId()).thenAccept(success ->{
             Bukkit.getScheduler().runTask(plugin, () -> {
                 if(success) {
                     MessageSender.sendMessage(player,"<green>Character description has been set</green>");
@@ -252,7 +246,7 @@ public class CharacterCommand {
 
         if(isOnCooldown(player)) return;
 
-        db.updateGender(gender,player.getUniqueId()).thenAccept(success ->{
+        db.updateGender(gender.replaceAll("&(#[0-9a-fA-F]{6}|[0-9a-fk-orA-FK-OR])", ""),player.getUniqueId()).thenAccept(success ->{
             Bukkit.getScheduler().runTask(plugin, () -> {
                 if(success) {
                     MessageSender.sendMessage(player,"<green>Character gender has been set</green>");
@@ -299,7 +293,7 @@ public class CharacterCommand {
 
 
             if(plugin.lands.townsCard){
-                String townsNames = String.join(", ", plugin.lands.getTownNames(target.getUniqueId()));
+                String townsNames = String.join(", ", plugin.lands.getLandsNames(target.getUniqueId()));
                 page1String += config.getString("lands.townsMessage")
                         .replace("<%towns%>",townsNames);
             }
@@ -370,7 +364,7 @@ public class CharacterCommand {
         if(plugin.landsEnabled){
 
             if(plugin.lands.townsCard){
-                String townsNames = String.join(", ", plugin.lands.getTownNames(offlinePlayer.getUniqueId()));
+                String townsNames = String.join(", ", plugin.lands.getLandsNames(offlinePlayer.getUniqueId()));
                 part.add(config.getString("lands.townsMessage").replace("<%towns%>",townsNames));
             }
 
@@ -433,7 +427,7 @@ public class CharacterCommand {
                 "<yellow><bold>Version: <white>" + plugin.getDescription().getVersion() + "</white></bold></yellow>\n" +
                 "<yellow><bold>By: <white>" + String.join(", ", plugin.getDescription().getAuthors()) + "</white></bold></yellow>\n" +
                 "<yellow><bold>Aliases: <green>profile</green> , <green>card</green></bold></yellow>\n" +
-                "<yellow><bold>Commands:</bold></yellow>\n";
+                "<yellow><bold>Commands you have permission for:</bold></yellow>\n";
         if(sender.hasPermission("charactercard.character.set")){
             help += "<green><bold>/character set</bold></green>\n";
         }
@@ -451,6 +445,9 @@ public class CharacterCommand {
         }
         if(sender.hasPermission("charactercard.local.spy")){
             help += "<green><bold>/localspy</bold></green>\n";
+        }
+        if(sender.hasPermission("charactercard.realname") && plugin.essentialsXEnabled){
+            help += "<green><bold>/realname</bold></green>\n";
         }
         help += "<gold><bold>————=====================————</bold></gold>";
         return help;

@@ -11,6 +11,7 @@ import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import net.lordofthetimes.characterCard.commands.CharacterCommand;
 import net.lordofthetimes.characterCard.commands.LocalCommand;
+import net.lordofthetimes.characterCard.commands.RealNameCommand;
 import net.lordofthetimes.characterCard.database.DatabaseManager;
 
 import net.lordofthetimes.characterCard.hooks.CharacterCardPlaceholderExpansion;
@@ -20,13 +21,20 @@ import net.lordofthetimes.characterCard.listeners.LocalManager;
 import net.lordofthetimes.characterCard.listeners.PlayerJoinListener;
 import net.lordofthetimes.characterCard.utils.CharacterCardLogger;
 import net.lordofthetimes.characterCard.utils.UpdateChecker;
+import org.bukkit.Bukkit;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandMap;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import static dev.dejvokep.boostedyaml.route.Route.fromSingleKey;
@@ -47,6 +55,7 @@ public final class CharacterCard extends JavaPlugin {
     public CharacterCardPlaceholderExpansion papi;
     public EssentialsXHook essentials;
 
+    public RealNameCommand realNameCommand;
     public LocalCommand localCommand;
     public CharacterCommand characterCommand;
 
@@ -125,10 +134,15 @@ public final class CharacterCard extends JavaPlugin {
             enablePAPISupport();
         }
         characterCommand = new CharacterCommand(this, db);
-        localCommand = new LocalCommand(this);
+
 
         playerJoinListener = new PlayerJoinListener(db,this);
-        localManager = new LocalManager(this);
+
+        if(config.getBoolean("localChat.enabled")){
+            localCommand = new LocalCommand(this);
+            localManager = new LocalManager(this);
+            getLogger().info("Local chat now enabled!");
+        }
 
         getServer().getPluginManager().registerEvents(playerJoinListener,this);
         getServer().getPluginManager().registerEvents(localManager,this);
@@ -151,9 +165,45 @@ public final class CharacterCard extends JavaPlugin {
         this.papi= new CharacterCardPlaceholderExpansion(this,db,config);
         papi.register();
     }
-
+    @SuppressWarnings("unchecked")
     private void enableEssentialsXSupport(){
         this.essentialsXEnabled = true;
         this.essentials = new EssentialsXHook(config);
+        Bukkit.getScheduler().runTask(this, () -> unregisterCommand("realname"));
+
     }
+
+    @SuppressWarnings("unchecked")
+    private void unregisterCommand(String name) {
+        try {
+            Field field = Bukkit.getServer().getClass().getDeclaredField("commandMap");
+            field.setAccessible(true);
+
+            CommandMap commandMap = (CommandMap) field.get(Bukkit.getServer());
+            Map<String, Command> knownCommands = commandMap.getKnownCommands();
+
+            // Collect keys to remove first
+            List<String> keysToRemove = new ArrayList<>();
+            Command target = knownCommands.get(name);
+            if (target == null) return;
+
+            for (Map.Entry<String, Command> entry : knownCommands.entrySet()) {
+                if (entry.getValue() == target) {
+                    keysToRemove.add(entry.getKey());
+                }
+            }
+
+            // Remove safely after iteration
+            for (String key : keysToRemove) {
+                knownCommands.remove(key);
+            }
+            this.realNameCommand = new RealNameCommand(this);
+
+        } catch (Exception e) {
+            logger.logError("Failed to unregister realname command from essentials! ",e);
+        }
+    }
+
+
+
 }

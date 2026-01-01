@@ -23,9 +23,9 @@ public class LandsHook {
         townsCard = config.getBoolean("lands.towns");
         nationsCard = config.getBoolean("lands.nations");
         this.config = config;
-    }
+    }           
 
-    public String getTownNames(UUID uuid){
+    public String getLandsNames(UUID uuid){
         LandPlayer landPlayer = api.getLandPlayer(uuid);
 
         if(landPlayer == null){
@@ -34,6 +34,7 @@ public class LandsHook {
 
         List<String> townNames = landPlayer.getLands().stream()
                 .map(Land::getName)
+                .distinct()
                 .toList();
         townNames = townNames.isEmpty() ? List.of("None") : townNames;
 
@@ -51,6 +52,7 @@ public class LandsHook {
                 .map(Land::getNation)
                 .filter(Objects::nonNull)
                 .map(Nation::getName)
+                .distinct()
                 .toList();
         nationNames = nationNames.isEmpty() ? List.of("None") : nationNames;
         return String.join(", ",nationNames);

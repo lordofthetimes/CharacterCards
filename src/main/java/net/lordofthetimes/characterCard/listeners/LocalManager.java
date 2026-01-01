@@ -47,16 +47,4 @@ public class LocalManager implements Listener {
         }
     }
 
-//    @EventHandler(priority = EventPriority.HIGHEST)
-//    public void onLegacyChat(org.bukkit.event.player.AsyncPlayerChatEvent event) {
-//        if (event.isAsynchronous()) return; // skip legacy if async handled already
-//        Player player = event.getPlayer();
-//        if(event.isCancelled() || event.getMessage().isEmpty()) return;
-//        if(localCommand.localMode.get(player.getUniqueId())){
-//            event.setCancelled(true);
-//            Component message = LegacyComponentSerializer.legacySection().deserialize(event.getMessage());
-//            localCommand.sendLocal(player, message);
-//        }
-//    }
-
 }

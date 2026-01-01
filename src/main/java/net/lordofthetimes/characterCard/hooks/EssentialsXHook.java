@@ -11,6 +11,8 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class EssentialsXHook {
@@ -42,5 +44,30 @@ public class EssentialsXHook {
         User user = essentials.getUser(uuid);
         return user.getNickname();
     }
+
+    public List<String> getAllOnlineNicknames(){
+         Iterable<User> users = essentials.getOnlineUsers();
+         List<String> nicknames = new ArrayList<>();
+         users.forEach(user ->{
+             String nickname = user.getNickname();
+             if(nickname != null && !nickname.equals(user.getName())){
+                 nicknames.add(user.getNickname());
+             }
+         });
+        return nicknames;
+    }
+
+    public User getOnlineUserByNickname(String nickname) {
+        for (User user : essentials.getOnlineUsers()) {
+            String nick = user.getNickname();
+
+            if (nick == null) continue;
+            if (nick.equalsIgnoreCase(nickname)) {
+                return user;
+            }
+        }
+        return null;
+    }
+
 
 }
