@@ -2,13 +2,13 @@ package net.lordofthetimes.characterCard;
 
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.dvs.versioning.BasicVersioning;
-import dev.dejvokep.boostedyaml.route.Route;
 import dev.dejvokep.boostedyaml.settings.dumper.DumperSettings;
 import dev.dejvokep.boostedyaml.settings.general.GeneralSettings;
 import dev.dejvokep.boostedyaml.settings.loader.LoaderSettings;
 import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
+import dev.jorel.commandapi.CommandAPIPaperConfig;
 import net.lordofthetimes.characterCard.commands.CharacterCommand;
 import net.lordofthetimes.characterCard.commands.LocalCommand;
 import net.lordofthetimes.characterCard.commands.RealNameCommand;
@@ -24,20 +24,14 @@ import net.lordofthetimes.characterCard.utils.UpdateChecker;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandMap;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-
-import static dev.dejvokep.boostedyaml.route.Route.fromSingleKey;
 
 
 public final class CharacterCard extends JavaPlugin {
@@ -67,7 +61,7 @@ public final class CharacterCard extends JavaPlugin {
 
     @Override
     public void onLoad() {
-        CommandAPI.onLoad(new CommandAPIBukkitConfig(this));
+        CommandAPI.onLoad(new CommandAPIPaperConfig(this).verboseOutput(false));
     }
 
     @Override

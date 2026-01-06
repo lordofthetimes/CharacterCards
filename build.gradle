@@ -8,7 +8,7 @@ plugins {
 
 
 group = 'net.lordofthetimes'
-version = '1.2.0'
+version = '1.2.1'
 
 repositories {
     mavenCentral()
@@ -31,7 +31,7 @@ repositories {
 
 dependencies {
     compileOnly "com.github.angeschossen:LandsAPI:7.15.20"
-    implementation "dev.jorel:commandapi-bukkit-shade:9.7.0"
+    implementation("dev.jorel:commandapi-paper-shade:11.1.0")
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
     compileOnly 'me.clip:placeholderapi:2.11.7'
     implementation 'org.xerial:sqlite-jdbc:3.42.0.0'
@@ -70,7 +70,9 @@ tasks.withType(JavaCompile).configureEach {
         options.release.set(targetJavaVersion)
     }
 }
+tasks.shadowJar {
 
+}
 processResources {
     def props = [version: version]
     inputs.properties props
@@ -80,6 +82,9 @@ processResources {
     }
 }
 tasks.named("shadowJar") {
+    manifest {
+        attributes["paperweight-mappings-namespace"] = "mojang"
+    }
     archiveClassifier.set("")
     relocate 'org.sqlite', 'net.lordofthetimes.libs.sqlite'
     relocate("dev.jorel.commandapi", "net.lordofthetimes.libs.commandapi")
