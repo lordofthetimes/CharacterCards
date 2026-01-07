@@ -17,6 +17,7 @@ import net.lordofthetimes.characterCard.database.DatabaseManager;
 import net.lordofthetimes.characterCard.hooks.CharacterCardPlaceholderExpansion;
 import net.lordofthetimes.characterCard.hooks.EssentialsXHook;
 import net.lordofthetimes.characterCard.hooks.LandsHook;
+import net.lordofthetimes.characterCard.hooks.bstats.Metrics;
 import net.lordofthetimes.characterCard.listeners.LocalManager;
 import net.lordofthetimes.characterCard.listeners.PlayerJoinListener;
 import net.lordofthetimes.characterCard.utils.CharacterCardLogger;
@@ -140,6 +141,9 @@ public final class CharacterCard extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(playerJoinListener,this);
         getServer().getPluginManager().registerEvents(localManager,this);
+
+        int pluginId = 28746;
+        Metrics metrics = new Metrics(this, pluginId);
 
     }
 
