@@ -33,6 +33,16 @@ descriptionMessage: "\n<gold><bold>Description: </bold><%description%></gold>"
 loreMessage: "<black><bold>Lore: </bold><%lore%></black>"
 
 # ╔                                              ╗
+# ║              SHIFT CLICK CARD                ║
+# ╚                                              ╝
+shiftCard:
+  # Enable opening card on shift right click [default - true]
+  enabled: true
+  # This decides if the card should be opened using chat or book [default - CHAT] (options : CHAT,BOOK)
+  # defaults to CHAT if no option is set
+  mode: "CHAT"
+
+# ╔                                              ╗
 # ║             LANDS COMPATIBILITY              ║
 # ╚                                              ╝
 lands:
@@ -83,7 +93,7 @@ localChat:
   prefix: "<green><bold>[Local]</bold></green> "
   # What should be used in place of name, supports papi placeholders
   # Built in placeholders: <%player_name%> - player name, <%nickname%> - essentials nickname if support enabled
-  name: "<%player_name%>: "
+  name: "<%nickname%>: "
   # Distance of local chat [default - 100]
   distance: 100
 
@@ -99,4 +109,4 @@ database:
 
 
 # DO NOT CHANGE VERSION - ESSENTIAL FOR CONFIG UPDATES
-config-version: 3
+config-version: 4

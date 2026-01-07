@@ -7,7 +7,6 @@ import dev.dejvokep.boostedyaml.settings.general.GeneralSettings;
 import dev.dejvokep.boostedyaml.settings.loader.LoaderSettings;
 import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings;
 import dev.jorel.commandapi.CommandAPI;
-import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import dev.jorel.commandapi.CommandAPIPaperConfig;
 import net.lordofthetimes.characterCard.commands.CharacterCommand;
 import net.lordofthetimes.characterCard.commands.LocalCommand;
@@ -19,7 +18,7 @@ import net.lordofthetimes.characterCard.hooks.EssentialsXHook;
 import net.lordofthetimes.characterCard.hooks.LandsHook;
 import net.lordofthetimes.characterCard.hooks.bstats.Metrics;
 import net.lordofthetimes.characterCard.listeners.LocalManager;
-import net.lordofthetimes.characterCard.listeners.PlayerJoinListener;
+import net.lordofthetimes.characterCard.listeners.CharacterManager;
 import net.lordofthetimes.characterCard.utils.CharacterCardLogger;
 import net.lordofthetimes.characterCard.utils.UpdateChecker;
 import org.bukkit.Bukkit;
@@ -54,7 +53,7 @@ public final class CharacterCard extends JavaPlugin {
     public LocalCommand localCommand;
     public CharacterCommand characterCommand;
 
-    public PlayerJoinListener playerJoinListener;
+    public CharacterManager playerJoinListener;
     public LocalManager localManager;
 
 
@@ -131,7 +130,7 @@ public final class CharacterCard extends JavaPlugin {
         characterCommand = new CharacterCommand(this, db);
 
 
-        playerJoinListener = new PlayerJoinListener(db,this);
+        playerJoinListener = new CharacterManager(db,this);
 
         if(config.getBoolean("localChat.enabled")){
             localCommand = new LocalCommand(this);

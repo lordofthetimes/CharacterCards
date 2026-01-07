@@ -257,7 +257,7 @@ public class CharacterCommand {
         });
     }
 
-    private void openBook(Player viewer, OfflinePlayer target) {
+    public void openBook(Player viewer, OfflinePlayer target) {
         ConcurrentHashMap<String,String> data = db.getPlayerDataCache(target.getUniqueId());
 
         if (data == null) {
@@ -325,7 +325,7 @@ public class CharacterCommand {
         viewer.openBook(bookItem);
     }
 
-    private void openCharacter(Player viewer, OfflinePlayer offlinePlayer){
+    public void openCharacter(Player viewer, OfflinePlayer offlinePlayer){
         ConcurrentHashMap<String,String> data = db.getPlayerDataCache(offlinePlayer.getUniqueId());
         if (data == null) {
             MessageSender.sendMessage(viewer, "<red>Player data is not loaded yet!</red>");
