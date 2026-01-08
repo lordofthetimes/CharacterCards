@@ -21,7 +21,7 @@ public class DatabaseManager {
     private final Boolean debug;
     private final String path;
     private final String ageMode;
-    private final List<String> columns = List.of("loreName","age","race","description","lore","gender","joinTime");
+    private final List<String> columns = List.of("loreName","age","race","description","lore","gender","religion","joinTime");
     private final String defaultValue = "<gray>None</gray>";
     private final ExecutorService dbExecutor =
             Executors.newSingleThreadExecutor();
@@ -62,6 +62,7 @@ public class DatabaseManager {
         map.put("description",defaultValue);
         map.put("lore",defaultValue);
         map.put("gender",defaultValue);
+        map.put("religion",defaultValue);
         map.put("joinTime",joinTime);
         return map;
     }
@@ -159,6 +160,7 @@ public class DatabaseManager {
                         age TEXT,
                         gender TEXT,
                         race TEXT,
+                        religion TEXT,
                         description TEXT,
                         lore TEXT
                         joinTime INTEGER
@@ -230,7 +232,7 @@ public class DatabaseManager {
         return CompletableFuture.supplyAsync(() ->{
             ConcurrentHashMap<String,String> result = new ConcurrentHashMap<>(2);
 
-            String sql = "SELECT lore, loreName, age, race, description FROM characters WHERE uuid = ? LIMIT 1";
+            String sql = "SELECT uuid, lore, loreName, age, race, description,gender,religion,joinTime FROM characters WHERE uuid = ? LIMIT 1";
 
             if(debug){
                 logger.logQuery(sql);
@@ -245,6 +247,8 @@ public class DatabaseManager {
                         result.put("age",rs.getString("age"));
                         result.put("race",rs.getString("race"));
                         result.put("description",rs.getString("description"));
+                        result.put("joinTime", String.valueOf(rs.getLong("joinTime")));
+                        result.put("religion",rs.getString("religion"));
                         return result;
                     }
                 }
@@ -260,7 +264,7 @@ public class DatabaseManager {
         return CompletableFuture.supplyAsync(() -> {
             ConcurrentHashMap<UUID, ConcurrentHashMap<String, String>> allData = new ConcurrentHashMap<>();
 
-            String sql = "SELECT uuid, lore, loreName, age, race, description,gender,joinTime FROM characters";
+            String sql = "SELECT uuid, lore, loreName, age, race, description,gender,religion,joinTime FROM characters";
 
             if(debug){
                 logger.logQuery(sql);
@@ -280,6 +284,7 @@ public class DatabaseManager {
                     playerData.put("description", rs.getString("description"));
                     playerData.put("gender", rs.getString("gender"));
                     playerData.put("joinTime", String.valueOf(rs.getLong("joinTime")));
+                    playerData.put("religion",rs.getString("religion"));
 
                     allData.put(uuid, playerData);
                 }
@@ -296,7 +301,7 @@ public class DatabaseManager {
         return CompletableFuture.supplyAsync(() ->{
 
             String sql = "UPDATE characters SET loreName = ?, lore = ?, " +
-                    "age = ?, race = ?, description = ?, gender = ? WHERE uuid = ?";
+                    "age = ?, race = ?, description = ?, gender = ?,religion = ? WHERE uuid = ?";
 
             if(debug){
                 logger.logQuery(sql);
@@ -309,7 +314,8 @@ public class DatabaseManager {
                 query.setString(4, defaultValue);
                 query.setString(5, defaultValue);
                 query.setString(6, defaultValue);
-                query.setString(7, uuid.toString());
+                query.setString(7, defaultValue);
+                query.setString(8, uuid.toString());
                 return query.executeUpdate() > 0;
             } catch (SQLException e) {
                 plugin.getLogger().log(Level.SEVERE, "Player data update failed for uuid : " + uuid, e);
@@ -320,7 +326,7 @@ public class DatabaseManager {
 
     public CompletableFuture<Boolean> insertPlayerData(UUID uuid, String loreName, String lore, String age, String race, String description,Long joinTime){
         return CompletableFuture.supplyAsync(() ->{
-            String sql = "INSERT INTO characters(uuid,loreName,lore,age,race,description,gender,joinTIme) VALUES(?,?,?,?,?,?,?,?)";
+            String sql = "INSERT INTO characters(uuid,loreName,lore,age,race,description,gender,religion,joinTIme) VALUES(?,?,?,?,?,?,?,?,?)";
 
             if(debug){
                 logger.logQuery(sql);
@@ -334,7 +340,8 @@ public class DatabaseManager {
                 query.setString(5,race);
                 query.setString(6,description);
                 query.setString(7,description);
-                query.setLong(8,joinTime);
+                query.setString(8,description);
+                query.setLong(9,joinTime);
 
                 return query.executeUpdate() > 0;
             } catch (SQLException e){
@@ -365,6 +372,32 @@ public class DatabaseManager {
                 }
             } catch (SQLException e) {
                 logger.logErrorDB("Failed to UPDATE gender from characters for uuid "+ uuid.toString() + " : ", e);
+            }
+            return false;
+        },dbExecutor);
+    }
+
+    public CompletableFuture<Boolean> updateReligion(String religion, UUID uuid){
+        return CompletableFuture.supplyAsync(()->{
+            try {
+                ConcurrentHashMap<String,String> data = getPlayerDataCache(uuid);
+                if (data == null) {
+                    throw new IllegalStateException("Cache missing for UUID: " + uuid);
+                }
+                data.replace("religion", religion);
+                String sql = "UPDATE characters SET religion = ? WHERE uuid = ?";
+
+                if(debug){
+                    logger.logQuery(sql);
+                }
+
+                try(PreparedStatement query = connection.prepareStatement(sql)){
+                    query.setString(1,religion);
+                    query.setString(2,uuid.toString());
+                    return query.executeUpdate() > 0;
+                }
+            } catch (SQLException e) {
+                logger.logErrorDB("Failed to UPDATE religion from characters for uuid "+ uuid.toString() + " : ", e);
             }
             return false;
         },dbExecutor);

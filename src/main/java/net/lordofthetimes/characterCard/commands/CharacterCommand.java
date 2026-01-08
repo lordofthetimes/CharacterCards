@@ -31,14 +31,32 @@ public class CharacterCommand {
     private final CharacterCard plugin;
     private final DatabaseManager db;
     private final HashMap<UUID, Long> lastUse = new HashMap<>();
-    private final String ageMode;
 
+    private String ageMode;
+    public boolean nameEnabled;
+    public boolean ageEnabled;
+    public boolean raceEnabled;
+    public boolean genderEnabled;
+    public boolean religionEnabled;
+    public boolean descriptionEnabled;
+    public boolean loreEnabled;
 
+    public String nameMessage;
+    public String ageMessage;
+    public String raceMessage;
+    public String genderMessage;
+    public String religionMessage;
+    public String descriptionMessage;
+    public String loreMessage;
+    public String townMessage;
+    public String nationsMessage;
 
     public CharacterCommand(CharacterCard plugin, DatabaseManager db) {
         this.plugin = plugin;
         this.db = db;
-        this.ageMode = plugin.config.getString("ageMode");
+
+        loadCharacterSettings();
+
         CommandAPICommand character =  new CommandAPICommand("character")
                 .withPermission("charactercard.character")
                 .withAliases("profile", "card")
@@ -118,47 +136,73 @@ public class CharacterCommand {
 
 
         CommandAPICommand characterSet = new CommandAPICommand("set")
-                .withPermission("charactercard.character.set")
-                .withSubcommand(
-                        new CommandAPICommand("lore")
-                                .withPermission("charactercard.character.set")
-                                .withArguments(new GreedyStringArgument("lore")
-                                )
-                                .executes((sender,args) -> { if(sender instanceof Player player) setLore(player,(String) args.get("lore")); })
-                ).withSubcommand(
-                        new CommandAPICommand("name")
-                                .withPermission("charactercard.character.set")
-                                .withArguments(new GreedyStringArgument("name"))
-                                .executes((sender,args) -> { if(sender instanceof Player player) setName(player,(String) args.get("name")); })
-                ).withSubcommand(
-                        new CommandAPICommand("race")
-                                .withPermission("charactercard.character.set")
-                                .withArguments(new GreedyStringArgument("race"))
-                                .executes((sender,args) -> { if(sender instanceof Player player) setRace(player,(String) args.get("race")); })
-                ).withSubcommand(
-                        new CommandAPICommand("description")
-                                .withPermission("charactercard.character.set")
-                                .withArguments(new GreedyStringArgument("description"))
-                                .executes((sender,args) -> { if(sender instanceof Player player) setDescription(player,(String) args.get("description")); })
-                ).withSubcommand(
-                        new CommandAPICommand("gender")
-                                .withPermission("charactercard.character.set")
-                                .withArguments(new GreedyStringArgument("gender"))
-                                .executes((sender,args) -> { if(sender instanceof Player player) setGender(player,(String) args.get("gender")); })
-                );
+                .withPermission("charactercard.character.set");
 
+        if(nameEnabled){
+            characterSet.withSubcommand(
+                    new CommandAPICommand("name")
+                            .withPermission("charactercard.character.set")
+                            .withArguments(new GreedyStringArgument("name"))
+                            .executes((sender,args) -> { if(sender instanceof Player player) setName(player,(String) args.get("name")); })
+            );
+        }
 
+        if(ageMode.equals("SET") && ageEnabled){
+            characterSet.withSubcommand(
+                    new CommandAPICommand("age")
+                            .withPermission("charactercard.character.set")
+                            .withArguments(new GreedyStringArgument("age"))
+                            .executes((sender,args) -> { if(sender instanceof Player player) setAge(player,(String) args.get("age")); })
+            );
+        }
 
-            if(plugin.config.getString("ageMode").equals("SET")){
-                characterSet.withSubcommand(
-                        new CommandAPICommand("age")
-                                .withPermission("charactercard.character.set")
-                                .withArguments(new GreedyStringArgument("age"))
-                                .executes((sender,args) -> { if(sender instanceof Player player) setAge(player,(String) args.get("age")); })
-                );
-            }
+        if(raceEnabled){
+            characterSet.withSubcommand(
+                    new CommandAPICommand("race")
+                            .withPermission("charactercard.character.set")
+                            .withArguments(new GreedyStringArgument("race"))
+                            .executes((sender,args) -> { if(sender instanceof Player player) setRace(player,(String) args.get("race")); })
+            );
+        }
 
-            character.withSubcommand(characterSet).register();
+        if(genderEnabled){
+            characterSet.withSubcommand(
+                    new CommandAPICommand("gender")
+                            .withPermission("charactercard.character.set")
+                            .withArguments(new GreedyStringArgument("gender"))
+                            .executes((sender,args) -> { if(sender instanceof Player player) setGender(player,(String) args.get("gender")); })
+            );
+        }
+
+        if(religionEnabled){
+            characterSet.withSubcommand(
+                    new CommandAPICommand("religion")
+                            .withPermission("charactercard.character.set")
+                            .withArguments(new GreedyStringArgument("religion"))
+                            .executes((sender,args) -> { if(sender instanceof Player player) setReligion(player,(String) args.get("religion")); })
+            );
+        }
+
+        if(descriptionEnabled){
+            characterSet.withSubcommand(
+                    new CommandAPICommand("description")
+                            .withPermission("charactercard.character.set")
+                            .withArguments(new GreedyStringArgument("description"))
+                            .executes((sender,args) -> { if(sender instanceof Player player) setDescription(player,(String) args.get("description")); })
+            );
+        }
+
+        if(loreEnabled){
+            characterSet.withSubcommand(
+                    new CommandAPICommand("lore")
+                            .withPermission("charactercard.character.set")
+                            .withArguments(new GreedyStringArgument("lore")
+                            )
+                            .executes((sender,args) -> { if(sender instanceof Player player) setLore(player,(String) args.get("lore")); })
+            );
+        }
+
+        character.withSubcommand(characterSet).register();
 
     }
 
@@ -257,6 +301,21 @@ public class CharacterCommand {
         });
     }
 
+    private void setReligion(Player player, String religion){
+
+        if(isOnCooldown(player)) return;
+
+        db.updateReligion(religion.replaceAll("&(#[0-9a-fA-F]{6}|[0-9a-fk-orA-FK-OR])", ""),player.getUniqueId()).thenAccept(success ->{
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                if(success) {
+                    MessageSender.sendMessage(player,"<green>Character religion has been set</green>");
+                } else {
+                    MessageSender.sendMessage(player,"<red>Failed to save gender!</red>");
+                }
+            });
+        });
+    }
+
     public void openBook(Player viewer, OfflinePlayer target) {
         ConcurrentHashMap<String,String> data = db.getPlayerDataCache(target.getUniqueId());
 
@@ -270,6 +329,7 @@ public class CharacterCommand {
         String lore = data.get("lore");
         String race = data.get("race");
         String gender = data.get("gender");
+        String religion = data.get("religion");
         String description = data.get("description");
         long joinTime = Long.parseLong(data.get("joinTime"));
 
@@ -277,40 +337,55 @@ public class CharacterCommand {
 
         ItemStack bookItem = new ItemStack(Material.WRITTEN_BOOK);
         BookMeta meta = (BookMeta) bookItem.getItemMeta();
+        String page1String = "";
 
-        String page1String = config.getString("nameMessage").replace("<%name%>",name);
-
-        if(ageMode.equals("SET")){
-            page1String += config.getString("ageMessage").replace("<%age%>",age);
-        }
-        else if(ageMode.equals("JOIN")){
-            page1String += config.getString("ageMessage").replace("<%age%>",formatDuration(System.currentTimeMillis() - joinTime));
+        if(nameEnabled){
+            page1String += nameMessage.replace("<%name%>",name);
         }
 
-        page1String +=  config.getString("raceMessage").replace("<%race%>",race) +
-                config.getString("genderMessage").replace("<%gender%>",gender);
+        if(ageEnabled){
+            if(ageMode.equals("SET")){
+                page1String += ageMessage.replace("<%age%>",age);
+            }
+            else if(ageMode.equals("JOIN")){
+                page1String += ageMessage.replace("<%age%>",formatDuration(System.currentTimeMillis() - joinTime));
+            }
+        }
+
+        if(raceEnabled){
+            page1String += raceMessage.replace("<%race%>",race);
+        }
+
+        if(genderEnabled){
+            page1String += genderMessage.replace("<%gender%>",gender);
+        }
+
+        if(religionEnabled){
+            page1String += religionMessage.replace("<%religion%>",religion);
+        }
+
         if (plugin.landsEnabled) {
 
-
-            if(plugin.lands.townsCard){
+            if (plugin.lands.townsCard) {
                 String townsNames = String.join(", ", plugin.lands.getLandsNames(target.getUniqueId()));
-                page1String += config.getString("lands.townsMessage")
-                        .replace("<%towns%>",townsNames);
+                page1String += townMessage.replace("<%towns%>", townsNames);
             }
 
-            if(plugin.lands.townsCard){
+            if (plugin.lands.townsCard) {
                 String nationsNames = String.join(", ", plugin.lands.getNationNames(target.getUniqueId()));
-                page1String += config.getString("lands.nationsMessage")
-                        .replace("<%nations%>",nationsNames);
+                page1String += nationsMessage.replace("<%nations%>", nationsNames);
             }
-
         }
 
-        page1String += config.getString("descriptionMessage").replace("<%description%>",description);
+        if(descriptionEnabled){
+            page1String += descriptionMessage.replace("<%description%>",description);
+        }
 
+        String page2String = "";
 
-
-        String page2String = config.getString("loreMessage").replace("<%lore%>",lore);
+        if(loreEnabled){
+            page2String += loreMessage.replace("<%lore%>",lore);
+        }
 
         if(plugin.papiEnabled){
             page1String = PlaceholderAPI.setPlaceholders(target,page1String);
@@ -337,47 +412,62 @@ public class CharacterCommand {
         String lore = data.get("lore");
         String race = data.get("race");
         String gender = data.get("gender");
+        String religion = data.get("religion");
         String description = data.get("description");
-        YamlDocument config = plugin.config;
         Long joinTime = Long.parseLong(data.get("joinTime"));
         List<String> part = new ArrayList<String >();
-        part.add(
-                "<gold><bold>———===[ Character Card ]===———</bold></gold>\n" +
-                        config.getString("nameMessage").replace("<%name%>",name)
-        );
 
-        if(ageMode.equals("SET")){
-            part.add(
-                    config.getString("ageMessage").replace("<%age%>",age)
-            );
-        }
-        else if(ageMode.equals("JOIN")) {
-            part.add(
-                    config.getString("ageMessage").replace("<%age%>",formatDuration(System.currentTimeMillis() - joinTime))
-            );
+        part.add("<gold><bold>———===[ Character Card ]===———</bold></gold>\n");
+
+        if(nameEnabled){
+            part.add(nameMessage.replace("<%name%>",name));
         }
 
-        part.add(
-                config.getString("raceMessage").replace("<%race%>",race) +
-                        config.getString("genderMessage").replace("<%gender%>",gender)
-        );
+        if(ageEnabled){
+            if(ageMode.equals("SET")){
+                part.add(
+                        ageMessage.replace("<%age%>",age)
+                );
+            }
+            else if(ageMode.equals("JOIN")) {
+                part.add(
+                        ageMessage.replace("<%age%>",formatDuration(System.currentTimeMillis() - joinTime))
+                );
+            }
+        }
+
+        if(raceEnabled){
+            part.add(raceMessage.replace("<%race%>",race));
+        }
+
+        if(genderEnabled){
+            part.add(genderMessage.replace("<%gender%>",gender));
+        }
+
+        if(religionEnabled){
+            part.add(religionMessage.replace("<%religion%>",religion));
+        }
+
         if(plugin.landsEnabled){
 
             if(plugin.lands.townsCard){
                 String townsNames = String.join(", ", plugin.lands.getLandsNames(offlinePlayer.getUniqueId()));
-                part.add(config.getString("lands.townsMessage").replace("<%towns%>",townsNames));
+                part.add(townMessage.replace("<%towns%>",townsNames));
             }
 
             if(plugin.lands.townsCard){
                 String nationsNames = String.join(", ", plugin.lands.getNationNames(offlinePlayer.getUniqueId()));
-                part.add(config.getString("lands.nationsMessage").replace("<%nations%>",nationsNames));
+                part.add(nationsMessage.replace("<%nations%>",nationsNames));
             }
         }
-        part.add(
-                config.getString("descriptionMessage").replace("<%description%>",description) + "\n" +
-                config.getString("loreMessage").replace("<%lore%>",lore) +
-                "\n<gold><bold>————=====================————</bold></gold>"
-        );
+
+        if(descriptionEnabled){
+            part.add(descriptionMessage.replace("<%description%>",description) + "\n");
+        }
+
+        if(loreEnabled){
+            part.add(loreMessage.replace("<%lore%>",lore));
+        }
 
         if(plugin.papiEnabled){
             part = PlaceholderAPI.setPlaceholders(offlinePlayer,part);
@@ -486,6 +576,31 @@ public class CharacterCommand {
             sb.append(days).append(" day").append(days == 1 ? "" : "s");
 
         return sb.toString().trim();
+    }
+
+    public void loadCharacterSettings(){
+        this.ageMode = plugin.config.getString("ageMode");
+
+        this.nameEnabled = plugin.config.getBoolean("name");
+        this.ageEnabled = plugin.config.getBoolean("age");
+        this.raceEnabled = plugin.config.getBoolean("race");
+        this.genderEnabled = plugin.config.getBoolean("gender");
+        this.religionEnabled = plugin.config.getBoolean("religion");
+        this.descriptionEnabled = plugin.config.getBoolean("description");
+        this.loreEnabled = plugin.config.getBoolean("lore");
+
+        this.nameMessage = plugin.config.getString("nameMessage");
+        this.ageMessage = plugin.config.getString("ageMessage");
+        this.raceMessage = plugin.config.getString("raceMessage");
+        this.genderMessage = plugin.config.getString("genderMessage");
+        this.religionMessage = plugin.config.getString("religionMessage");
+        this.descriptionMessage = plugin.config.getString("descriptionMessage");
+        this.loreMessage = plugin.config.getString("loreMessage");
+        this.townMessage = plugin.config.getString("lands.townsMessage");
+        this.nationsMessage = plugin.config.getString("lands.nationsMessage");
+
+
+
     }
 
 }

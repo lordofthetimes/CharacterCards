@@ -7,10 +7,14 @@
 # This decides if plugin will check for new versions on reload or server start [default - true]
 checkForUpdate: true
 
-# if you want to disable any of the messages, just set them to empty string : ""
+# Enable name field [default - true]
+name: true
 
 # Message string that will be used for name, use <%name%> for a placeholder
 nameMessage: "<gold><bold>Name: </bold><%name%></gold>"
+
+# Enable age field [default - true]
+age: true
 
 # Should age be available to set for players or should it be based on when the player joined [default - SET] (options : SET,JOIN)
 # This setting is fully backwards compatible and can be changed at any time
@@ -19,15 +23,32 @@ ageMode: SET
 # Message string that will be used for age, use <%age%> for a placeholder
 ageMessage: "\n<gold><bold>Age: </bold><%age%></gold>"
 
+# Enable race field [default - true]
+race: true
 
 # Message string that will be used for race, use <%race%> for a placeholder
 raceMessage: "\n<gold><bold>Race: </bold><%race%></gold>"
 
-# Message string that will be used for race, use <%race%> for a placeholder
+# Enable gender field [default - true]
+gender: true
+
+# Message string that will be used for gender, use <%gender%> for a placeholder
 genderMessage: "\n<gold><bold>Gender: </bold><%gender%></gold>\n"
+
+# Enable religion field [default - true]
+religion: true
+
+# Message string that will be used for religion, use <%religion%> for a placeholder
+religionMessage: "\n<gold><bold>Religion: </bold><%religion%></gold>\n"
+
+# Enable description field [default - true]
+description: true
 
 # Message string that will be used for description, use <%description%> for a placeholder
 descriptionMessage: "\n<gold><bold>Description: </bold><%description%></gold>"
+
+# Enable lore field [default - true]
+lore: true
 
 # Message string that will be used for lore, use <%lore%> for a placeholder
 loreMessage: "<black><bold>Lore: </bold><%lore%></black>"
@@ -109,4 +130,4 @@ database:
 
 
 # DO NOT CHANGE VERSION - ESSENTIAL FOR CONFIG UPDATES
-config-version: 4
+config-version: 5
