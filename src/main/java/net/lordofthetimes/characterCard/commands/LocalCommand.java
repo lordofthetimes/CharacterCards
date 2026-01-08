@@ -9,6 +9,7 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.lordofthetimes.characterCard.CharacterCard;
 import net.lordofthetimes.characterCard.utils.MessageSender;
 import org.bukkit.Bukkit;
+import org.bukkit.Server;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
@@ -82,6 +83,7 @@ public class LocalCommand {
             finalMessage = PlaceholderAPI.setPlaceholders(player, finalMessage);
         }
 
+        Bukkit.getServer().getConsoleSender().sendMessage(MiniMessage.miniMessage().deserialize(finalMessage).append(message));
         for(Player onlinePlayer : Bukkit.getOnlinePlayers()){
             if(withinDistance(onlinePlayer,player) ||
                     (onlinePlayer.hasPermission("charactercard.local.spy")

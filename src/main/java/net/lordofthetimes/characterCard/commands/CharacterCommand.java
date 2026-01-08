@@ -100,7 +100,7 @@ public class CharacterCommand {
                                 .withPermission("charactercard.character.clear")
                                 .withOptionalArguments(new StringArgument("player")
                                         .replaceSuggestions(suggestPlayers())
-                                        .withPermission("charactercard.character.clear.others"))
+                                        .withPermission("charactercard.character.clear.self"))
                                 .executes((sender,args)->{
                                     if(sender instanceof Player player && !isOnCooldown(player)){
                                         if(args.get("player") == null){
