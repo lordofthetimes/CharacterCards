@@ -8,6 +8,8 @@ Plugin also provides Lands and Placeholder api optional dependency, allowing cha
 
 With the essentialsX compatibility, players nickname can be changed based on the name set in the Character Card and optionally /realname command can get support for tab completion, special characters and spaces
 
+You can also shift click on players to see their character cards
+
 Every line of the character card is changeable in the config, with a placeholder for player's values
 
 Players can also use MiniMessage formatting to add color and effects to the text
@@ -38,6 +40,8 @@ charactercard.local
 charactercard.localspy
 charactercard.realname
 ```
+
+
 
 # DOWNLOAD HERE [Modrinth](https://modrinth.com/plugin/character-cards)
 
