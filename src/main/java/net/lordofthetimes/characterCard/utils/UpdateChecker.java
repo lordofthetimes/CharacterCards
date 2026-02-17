@@ -72,6 +72,11 @@ public class UpdateChecker {
     }
     public void sendVersionPlayer(Player player){
         if(!checkForUpdate) return;
+        if(version.contains("experimental")){
+            MessageSender.sendMessage(player,"<red><bold>This version of Character Cards is experimental! Please manually check for updates!</bold></red>");
+            MessageSender.sendMessage(player,"<yellow>Running version<red><bold> " + version + "</bold></red>");
+            return;
+        }
         if(isNotLatest(version,latestVersion)){
             MessageSender.sendMessage(player,"<red><bold>Current version of Character Cards is not the latest!</bold></red>");
             MessageSender.sendMessage(player,"<yellow>Running version<red><bold> " + version + "</bold></red> when latest version is<green><bold> " + latestVersion + "</bold></green></yellow>");
@@ -91,7 +96,6 @@ public class UpdateChecker {
     private boolean isNotLatest(String current, String latest){
         String[] splitCurrent = current.split("\\.");
         String[] splitLatest = latest.split("\\.");
-
         for (int i = 0; i < 3; i++) {
             int curSeg = Integer.parseInt(splitCurrent[i]);
             int latSeg = Integer.parseInt(splitLatest[i]);

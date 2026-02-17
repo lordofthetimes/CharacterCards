@@ -11,6 +11,7 @@ import net.lordofthetimes.characterCard.utils.MessageSender;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
+import org.checkerframework.checker.regex.qual.Regex;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -83,21 +84,42 @@ public class LocalCommand {
             finalMessage = PlaceholderAPI.setPlaceholders(player, finalMessage);
         }
 
+
         Bukkit.getServer().getConsoleSender().sendMessage(MiniMessage.miniMessage().deserialize(finalMessage).append(message));
         for(Player onlinePlayer : Bukkit.getOnlinePlayers()){
-            if(withinDistance(onlinePlayer,player) ||
+            if(withinDistance(onlinePlayer,player,MiniMessage.miniMessage().serialize(message)) ||
                     (onlinePlayer.hasPermission("charactercard.local.spy")
                             && bypass.get(onlinePlayer.getUniqueId())
                     )){
-                onlinePlayer.sendMessage(MiniMessage.miniMessage().deserialize(finalMessage).append(message));
+                onlinePlayer.sendMessage(MiniMessage.miniMessage().deserialize(finalMessage).append(formatMessage(message)));
             }
         }
     }
 
-    public boolean withinDistance(Player p1, Player p2) {
+    public boolean withinDistance(Player p1, Player p2, String message) {
+
+        int distance = this.distance;
+        if(message.startsWith("!!")) distance = distance * 2;
+        else if(message.startsWith("!")) distance = (int) (distance * 1.5f);
+        else if(message.startsWith("*")) distance = distance / 5;
+        else if(message.startsWith("$")) distance = distance / 3;
+
+        if(message.length() < 2 || message.equals("!!")) distance = this.distance;
+
         if (!p1.getWorld().equals(p2.getWorld())) return false;
 
         return p1.getLocation().distanceSquared(p2.getLocation()) <= distance * distance;
+    }
+
+    private Component formatMessage(Component message){
+        String stringMessage = LegacyComponentSerializer.legacyAmpersand().serialize(message);
+        if(stringMessage.length() < 2) return message;
+
+        if(stringMessage.startsWith("!!")) stringMessage =  stringMessage.replaceAll("^!!","&o[Screams]&r ");
+        else if(stringMessage.startsWith("!")) stringMessage =  stringMessage.replaceAll("^!","&o[Shouts]&r ");
+        else if(stringMessage.startsWith("*")) stringMessage =  stringMessage.replaceAll("^\\*","&o[Whispers]&r ");
+        else if(stringMessage.startsWith("$")) stringMessage =  stringMessage.replaceAll("^\\$","&o[Mutters]&r ");
+        return LegacyComponentSerializer.legacyAmpersand().deserialize(stringMessage);
     }
 
 }
