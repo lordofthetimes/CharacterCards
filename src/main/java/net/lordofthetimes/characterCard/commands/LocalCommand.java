@@ -1,5 +1,6 @@
 package net.lordofthetimes.characterCard.commands;
 
+import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.GreedyStringArgument;
 import me.clip.placeholderapi.PlaceholderAPI;
@@ -26,12 +27,23 @@ public class LocalCommand {
 
     public int distance;
     public String prefix;
+    public boolean formattingEnabled;
+    public String screamPrefix;
+    public String shoutPrefix;
+    public String mutterPrefix;
+    public String whisperPrefix;
     public String name;
 
     public LocalCommand(CharacterCard plugin){
-        prefix = plugin.config.getString("localChat.prefix");
-        distance = plugin.config.getInt("localChat.distance");
-        name = plugin.config.getString("localChat.name");
+        YamlDocument config = plugin.config;
+        prefix = config.getString("localChat.prefix");
+        distance = config.getInt("localChat.distance");
+        name = config.getString("localChat.name");
+        formattingEnabled = config.getBoolean("localChat.format.enabled",true);
+        screamPrefix = config.getString("localChat.format.scream");
+        shoutPrefix = config.getString("localChat.format.shout");
+        mutterPrefix = config.getString("localChat.format.mutter");
+        whisperPrefix = config.getString("localChat.format.whisper");
         this.plugin = plugin;
 
         new CommandAPICommand("local")
@@ -99,12 +111,12 @@ public class LocalCommand {
     public boolean withinDistance(Player p1, Player p2, String message) {
 
         int distance = this.distance;
-        if(message.startsWith("!!")) distance = distance * 2;
-        else if(message.startsWith("!")) distance = (int) (distance * 1.5f);
-        else if(message.startsWith("*")) distance = distance / 5;
-        else if(message.startsWith("$")) distance = distance / 3;
+        if(message.startsWith(screamPrefix)) distance = distance * 2;
+        else if(message.startsWith(shoutPrefix)) distance = (int) (distance * 1.5f);
+        else if(message.startsWith(whisperPrefix)) distance = distance / 5;
+        else if(message.startsWith(mutterPrefix)) distance = distance / 3;
 
-        if(message.length() < 2 || message.equals("!!")) distance = this.distance;
+        if(message.length() < 2 || message.equals(screamPrefix)) distance = this.distance;
 
         if (!p1.getWorld().equals(p2.getWorld())) return false;
 
@@ -115,10 +127,10 @@ public class LocalCommand {
         String stringMessage = LegacyComponentSerializer.legacyAmpersand().serialize(message);
         if(stringMessage.length() < 2) return message;
 
-        if(stringMessage.startsWith("!!")) stringMessage =  stringMessage.replaceAll("^!!","&o[Screams]&r ");
-        else if(stringMessage.startsWith("!")) stringMessage =  stringMessage.replaceAll("^!","&o[Shouts]&r ");
-        else if(stringMessage.startsWith("*")) stringMessage =  stringMessage.replaceAll("^\\*","&o[Whispers]&r ");
-        else if(stringMessage.startsWith("$")) stringMessage =  stringMessage.replaceAll("^\\$","&o[Mutters]&r ");
+        if(stringMessage.startsWith(screamPrefix)) stringMessage =  stringMessage.replaceAll("^" + screamPrefix,"&o[Screams]&r ");
+        else if(stringMessage.startsWith(shoutPrefix)) stringMessage =  stringMessage.replaceAll("^" + shoutPrefix,"&o[Shouts]&r ");
+        else if(stringMessage.startsWith(whisperPrefix)) stringMessage =  stringMessage.replaceAll("^\\%s".formatted(whisperPrefix),"&o[Whispers]&r ");
+        else if(stringMessage.startsWith(mutterPrefix)) stringMessage =  stringMessage.replaceAll("^\\%s".formatted(mutterPrefix),"&o[Mutters]&r ");
         return LegacyComponentSerializer.legacyAmpersand().deserialize(stringMessage);
     }
 

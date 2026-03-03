@@ -105,7 +105,7 @@ essentials:
   nickname: true
 
 # ╔                                              ╗
-# ║             DATABASE SETTINGS                ║
+# ║            LOCAL CHAT SETTINGS               ║
 # ╚                                              ╝
 localChat:
   # Enable local chat: [default - true]
@@ -117,6 +117,13 @@ localChat:
   name: "<%nickname%>: "
   # Distance of local chat [default - 100]
   distance: 100
+  format:
+    #If formatting at the start of the message will change the distance
+    enabled: true
+    scream: "!!"
+    shout: "!"
+    mutter: "$"
+    whisper: "*"
 
 # ╔                                              ╗
 # ║             DATABASE SETTINGS                ║
@@ -130,4 +137,4 @@ database:
 
 
 # DO NOT CHANGE VERSION - ESSENTIAL FOR CONFIG UPDATES
-config-version: 5
+config-version: 6
