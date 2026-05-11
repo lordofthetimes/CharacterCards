@@ -136,10 +136,12 @@ public final class CharacterCard extends JavaPlugin {
             localCommand = new LocalCommand(this);
             localManager = new LocalManager(this);
             getLogger().info("Local chat now enabled!");
+
+            getServer().getPluginManager().registerEvents(localManager,this);
         }
 
         getServer().getPluginManager().registerEvents(playerJoinListener,this);
-        getServer().getPluginManager().registerEvents(localManager,this);
+
 
         int pluginId = 28746;
         Metrics metrics = new Metrics(this, pluginId);
