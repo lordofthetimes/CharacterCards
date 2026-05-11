@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 
+
 public final class CharacterCard extends JavaPlugin {
 
     public final CharacterCardLogger logger = new CharacterCardLogger(this.getLogger());
@@ -135,11 +136,12 @@ public final class CharacterCard extends JavaPlugin {
         if(config.getBoolean("localChat.enabled")){
             localCommand = new LocalCommand(this);
             localManager = new LocalManager(this);
+            getServer().getPluginManager().registerEvents(localManager,this);
             getLogger().info("Local chat now enabled!");
         }
 
         getServer().getPluginManager().registerEvents(playerJoinListener,this);
-        getServer().getPluginManager().registerEvents(localManager,this);
+
 
         int pluginId = 28746;
         Metrics metrics = new Metrics(this, pluginId);

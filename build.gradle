@@ -8,7 +8,7 @@ plugins {
 
 
 group = 'net.lordofthetimes'
-version = '1.4.0-experimental-1'
+version = '1.4.0-experimental-2'
 
 repositories {
     mavenCentral()
