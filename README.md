@@ -14,8 +14,11 @@ Every line of the character card is changeable in the config, with a placeholder
 
 Players can also use MiniMessage formatting to add color and effects to the text
 
+## If you have any issues, you can join a [discord server](https://discord.gg/RSu4UAbEUW) or open an issue on [github](https://github.com/lordofthetimes/CharacterCards/issues)
+
 ![Example image of character card](https://cdn.modrinth.com/data/bmeFJq7B/images/89099f14ee30ea69dfb1553b90ab7cec777724b9.png)
 ![Statistics](https://bstats.org/signatures/bukkit/CharacterCards.svg)
+
 ### Commands:
 ```
 /character help
@@ -40,8 +43,23 @@ charactercard.local
 charactercard.localspy
 charactercard.realname
 ```
+### Placeholders (PAPI)
+```
+%charactercard_name%
+%charactercard_age%
+%charactercard_race%
+%charactercard_description%
+%charactercard_lore%
+%charactercard_gender%
+%charactercard_religion%
 
-
+%charactercard_name_plain%
+%charactercard_age_plain%
+%charactercard_race_plain%
+%charactercard_description_plain%
+%charactercard_lore_plain%
+%charactercard_gender_plain%
+%charactercard_religion_plain%
+```
 
 # DOWNLOAD HERE [Modrinth](https://modrinth.com/plugin/character-cards)
-
