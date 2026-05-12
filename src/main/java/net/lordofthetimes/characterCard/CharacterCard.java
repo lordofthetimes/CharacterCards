@@ -102,12 +102,12 @@ public final class CharacterCard extends JavaPlugin {
         updateChecker = new UpdateChecker(this,version);
 
         if (getServer().getPluginManager().getPlugin("Lands") != null && config.getBoolean("lands.enabled")) {
-            getLogger().info("Lands detected, support enabled!");
+            logger.logInfo("Lands detected, support enabled!");
             enableLandsSupport();
         }
-
+        logger.logError(String.valueOf("" + getServer().getPluginManager().getPlugin("Essentials")  + "&&" + config.getBoolean("essentials.enabled")));
         if (getServer().getPluginManager().getPlugin("Essentials") != null && config.getBoolean("essentials.enabled")) {
-            getLogger().info("Essentials detected, support enabled!");
+            logger.logInfo("Essentials detected, support enabled!");
             enableEssentialsXSupport();
         }
 
@@ -138,6 +138,8 @@ public final class CharacterCard extends JavaPlugin {
             localManager = new LocalManager(this);
             getServer().getPluginManager().registerEvents(localManager,this);
             getLogger().info("Local chat now enabled!");
+
+            getServer().getPluginManager().registerEvents(localManager,this);
         }
 
         getServer().getPluginManager().registerEvents(playerJoinListener,this);
@@ -164,45 +166,10 @@ public final class CharacterCard extends JavaPlugin {
         this.papi= new CharacterCardPlaceholderExpansion(this,db,config);
         papi.register();
     }
-    @SuppressWarnings("unchecked")
+
     private void enableEssentialsXSupport(){
         this.essentialsXEnabled = true;
         this.essentials = new EssentialsXHook(config);
-        Bukkit.getScheduler().runTask(this, () -> unregisterCommand("realname"));
-
+        this.realNameCommand = new RealNameCommand(this);
     }
-
-    @SuppressWarnings("unchecked")
-    private void unregisterCommand(String name) {
-        try {
-            Field field = Bukkit.getServer().getClass().getDeclaredField("commandMap");
-            field.setAccessible(true);
-
-            CommandMap commandMap = (CommandMap) field.get(Bukkit.getServer());
-            Map<String, Command> knownCommands = commandMap.getKnownCommands();
-
-            // Collect keys to remove first
-            List<String> keysToRemove = new ArrayList<>();
-            Command target = knownCommands.get(name);
-            if (target == null) return;
-
-            for (Map.Entry<String, Command> entry : knownCommands.entrySet()) {
-                if (entry.getValue() == target) {
-                    keysToRemove.add(entry.getKey());
-                }
-            }
-
-            // Remove safely after iteration
-            for (String key : keysToRemove) {
-                knownCommands.remove(key);
-            }
-            this.realNameCommand = new RealNameCommand(this);
-
-        } catch (Exception e) {
-            logger.logError("Failed to unregister realname command from essentials! ",e);
-        }
-    }
-
-
-
 }

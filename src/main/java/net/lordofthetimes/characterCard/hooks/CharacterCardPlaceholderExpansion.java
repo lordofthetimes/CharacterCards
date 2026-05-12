@@ -2,6 +2,8 @@ package net.lordofthetimes.characterCard.hooks;
 
 import dev.dejvokep.boostedyaml.YamlDocument;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.lordofthetimes.characterCard.CharacterCard;
 import net.lordofthetimes.characterCard.database.DatabaseManager;
 import org.bukkit.entity.Player;
@@ -9,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 
 public class CharacterCardPlaceholderExpansion extends PlaceholderExpansion{
 
@@ -45,21 +48,29 @@ public class CharacterCardPlaceholderExpansion extends PlaceholderExpansion{
     @Override
     public @Nullable String onPlaceholderRequest(Player player, @NotNull String params) {
         ConcurrentHashMap<String,String> data = db.getPlayerDataCache(player.getUniqueId());
-        if (params.equalsIgnoreCase("name")) {
-            return data.get("loreName");
+
+        switch (params.toLowerCase()){
+            case "name": return data.get("loreName");
+            case "age": return data.get("age");
+            case "race": return data.get("race");
+            case "description": return data.get("description");
+            case "lore": return data.get("lore");
+            case "gender": return data.get("gender");
+            case "religion": return data.get("religion");
+
+            case "name_plain": return stripFormatting(data.get("loreName"));
+            case "age_plain": return stripFormatting(data.get("age"));
+            case "race_plain": return stripFormatting(data.get("race"));
+            case "description_plain": return stripFormatting(data.get("description"));
+            case "lore_plain": return stripFormatting(data.get("lore"));
+            case "gender_plain": return stripFormatting(data.get("gender"));
+            case "religion_plain": return stripFormatting(data.get("religion"));
+            default: return null;
         }
-        if (params.equalsIgnoreCase("age")) {
-            return data.get("age");
-        }
-        if (params.equalsIgnoreCase("race")) {
-            return data.get("race");
-        }
-        if (params.equalsIgnoreCase("description")) {
-            return data.get("description");
-        }
-        if (params.equalsIgnoreCase("lore")) {
-            return data.get("lore");
-        }
-        return null;
+    }
+
+    private String stripFormatting(String text){
+        MiniMessage mm = MiniMessage.miniMessage();
+        return PlainTextComponentSerializer.plainText().serialize(mm.deserialize(text));
     }
 }
