@@ -6,15 +6,15 @@ author: LordofTheTimes
 dependencies:
   server:
     Essentials:
-      load: BEFORE
+      load: AFTER
       required: false
     CommandAPI:
       load: BEFORE
       required: true
       join-classpath: true
     PlaceholderAPI:
-      load: BEFORE
+      load: AFTER
       required: false
     LandsAPI:
-      load: BEFORE
+      load: AFTER
       required: false

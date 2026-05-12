@@ -31,17 +31,17 @@ public class CharacterCardLogger {
     }
 
     public void logInfo(String message){
-        logger.log(Level.INFO,"[CC] " + message);
+        logger.log(Level.INFO,message);
     }
 
     public void logWarn(String message){
-        logger.log(Level.WARNING,"[CC] " + message);
+        logger.log(Level.WARNING,message);
     }
 
     public void logError(String message, Throwable e){
-        logger.log(Level.SEVERE, "[CC] " + message, e);
+        logger.log(Level.SEVERE, message, e);
     }
     public void logError(String message){
-        logger.log(Level.SEVERE, "[CC] " + message);
+        logger.log(Level.SEVERE, message);
     }
 }
