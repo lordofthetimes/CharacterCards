@@ -68,12 +68,12 @@ public class CharacterManager implements Listener {
         UUID uuid = player.getUniqueId();
         locked.add(uuid);
         if(mode.equals("BOOK")){
-            if(player.hasPermission("charactercard.book")){
+            if(player.hasPermission("charactercard.character.book")){
                 plugin.characterCommand.openBook(player,interacted);
             }
         }
         else{
-            if(player.hasPermission("charactercard.chat")){
+            if(player.hasPermission("charactercard.character.chat")){
                 plugin.characterCommand.openCharacter(player,interacted);
             }
         }
