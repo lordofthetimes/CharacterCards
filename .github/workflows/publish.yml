@@ -43,12 +43,19 @@ jobs:
   modrinth:
     runs-on: ubuntu-latest
     needs: publish
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Get version from gradle.properties
         run: echo "VERSION=$(grep 'version=' gradle.properties | cut -d'=' -f2)" >> $GITHUB_ENV
+
+      - name: Read changelog
+        run: |
+          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
+          cat CHANGELOG.md >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       - name: Download jar artifact
         uses: actions/download-artifact@v4
@@ -57,36 +64,36 @@ jobs:
           path: build/libs/
 
       - name: Publish to Modrinth
-        run: |
-          VERSION="${{ env.VERSION }}"
-          CHANGELOG=$(cat CHANGELOG.md)
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          modrinth-id: bmeFJq7B
+          modrinth-token: ${{ secrets.MODRINTH_SECRET }}
 
-          DATA=$(jq -n \
-            --arg version "$VERSION" \
-            --arg changelog "## Character Cards ${VERSION}
-  
-            ${CHANGELOG}
+          files: build/libs/CharacterCard-${{ env.VERSION }}.jar
 
-            **To update the plugin, just delete the old version and drag the new one into the plugins folder. I recommend to first boot up test server and see config changes**
-            If you find any issues or want to suggest features, please open an issue on my github repo [--> here <--](https://github.com/lordofthetimes/CharacterCards/issues)" \
-            '{
-          "name": $version,
-          "version_number": $version,
-          "changelog": $changelog,
-          "game_versions": ["1.21.x", "26.1.x"],
-          "version_type": "release",
-          "loaders": ["paper", "purpur"],
-          "featured": true,
-          "project_id": "bmeFJq7B",
-          "file_parts": ["jar"],
-          "dependencies": []
-          }')
+          name: Character Cards ${{ env.VERSION }}
+          version: ${{ env.VERSION }}
+          version-type: release
 
-          curl -X POST "https://api.modrinth.com/v2/version" \
-            -H "Authorization: ${{ secrets.MODRINTH_SECRET }}" \
-            -F "data=$DATA" \
-            -F "jar=@build/libs/CharacterCard-${VERSION}.jar"
+          loaders: |
+            paper
+            purpur
 
+          game-versions: |
+            1.21.x
+            26.1.x
+
+          changelog: |
+            ## Character Cards ${{ env.VERSION }}
+            
+            ${{ env.CHANGELOG }}
+            
+            **To update the plugin, just delete the old version and drag the new one into the plugins folder.**
+            
+            I recommend testing on a test server first in case config changes were introduced.
+            
+            If you find any issues or want to suggest features, please open an issue on GitHub:
+            https://github.com/lordofthetimes/CharacterCards/issues
   discord:
     runs-on: ubuntu-latest
     needs: publish
