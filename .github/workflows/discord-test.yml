@@ -1,19 +1,16 @@
 name: Test Discord
 on:
   workflow_dispatch:
-    inputs:
-      changelog:
-        description: 'Changelog'
-        required: true
-        type: string
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+      - uses: actions/checkout@v4
       - name: Notify Discord
         run: |
-          CHANGELOG="${{ github.event.inputs.changelog }}"
+          CHANGELOG=$(cat CHANGELOG.md)
           jq -n --arg content "## Character Cards TEST
 
           ${CHANGELOG}
