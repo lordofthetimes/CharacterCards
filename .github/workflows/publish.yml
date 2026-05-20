@@ -53,9 +53,11 @@ jobs:
 
       - name: Read changelog
         run: |
-          echo 'CHANGELOG<<CHANGELOG_END' >> $GITHUB_ENV
-          cat CHANGELOG.md >> $GITHUB_ENV
-          echo 'CHANGELOG_END' >> $GITHUB_ENV
+          {
+            echo 'changelog<<EOF'
+            cat CHANGELOG.md
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
 
       - name: Download jar artifact
         uses: actions/download-artifact@v4
@@ -86,7 +88,7 @@ jobs:
           changelog: |
             ## Character Cards ${{ env.VERSION }}
             
-            ${{ env.CHANGELOG }}
+            ${{ steps.changelog.outputs.changelog }}
             
             **To update the plugin, just delete the old version and drag the new one into the plugins folder.**
             
