@@ -15,6 +15,6 @@ jobs:
         run: |
           CONTENT="## Character Cards TEST\n\n${{ github.event.inputs.changelog }}\n\n**You can download this version [here](https://modrinth.com/plugin/character-cards/version/TEST)!**"
           jq -n --arg content "$CONTENT" '{"content": $content, "flags": 4}' | \
-          curl -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
+          curl -X POST "${{ secrets.DISCORD_WEBHOOK }}" \
             -H "Content-Type: application/json" \
             -d @-
