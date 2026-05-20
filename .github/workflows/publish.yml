@@ -78,7 +78,8 @@ jobs:
           "loaders": ["paper", "purpur"],
           "featured": true,
           "project_id": "bmeFJq7B",
-          "file_parts": ["jar"]
+          "file_parts": ["jar"],
+          "dependencies": []
           }')
 
           curl -X POST "https://api.modrinth.com/v2/version" \
