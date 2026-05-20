@@ -2,3 +2,8 @@
 - Fixed permissions for shift click
 - Added distance formatting using `!!`, `!`, `$` and `*` at the start of the message, range is calculated from range in config
 - Default range(x) is 100 
+- `*` range 0.2x
+- `$` range 0.33x
+- `normal` range 1x
+- `!` range 1.5x
+- `!!` range 2x
