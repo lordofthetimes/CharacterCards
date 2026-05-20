@@ -1,0 +1,40 @@
+name: Release Modrinth
+on:
+  release:
+    types: [published]
+
+jobs:
+  modrinth:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get version and changelog
+        run: |
+          echo "VERSION=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
+          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
+          cat CHANGELOG.md >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Publish to Modrinth
+        uses: cloudnode-pro/modrinth-publish@v2
+        with:
+          token: ${{ secrets.MODRINTH_SECRET }}
+          project: bmeFJq7B
+          version: ${{ env.VERSION }}
+          channel: release
+          loaders: |-
+            paper
+            purpur
+          game-versions: |-
+            1.21.x
+            26.1.x
+          files: build/libs/CharacterCard-${{ env.VERSION }}.jar
+          changelog: |
+            ## Character Cards ${{ env.VERSION }}
+
+            ${{ env.CHANGELOG }}
+
+            **To update the plugin, just delete the old version and drag the new one into the plugins folder. I recommend to first boot up test server and see config changes**
+            If you find any issues or want to suggest features, please open an issue on my github repo [--> here <--](https://github.com/lordofthetimes/CharacterCards/issues)

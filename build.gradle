@@ -2,13 +2,13 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
     id 'java'
-    id("xyz.jpenilla.run-paper") version "2.3.1"
-    id "com.gradleup.shadow" version "8.3.0"
+    id("xyz.jpenilla.run-paper") version "3.0.2"
+    id("com.gradleup.shadow") version "9.4.1"
 }
 
 
 group = 'net.lordofthetimes'
-version = '1.4.0-experimental-2'
+version = project.version
 
 repositories {
     mavenCentral()
@@ -49,7 +49,10 @@ tasks {
         // Configure the Minecraft version for our task.
         // This is the only required configuration besides applying the plugin.
         // Your plugin's jar (or shadowJar if present) will be used automatically.
-        minecraftVersion("1.21.4")
+        minecraftVersion("26.1.2")
+         javaLauncher.set(javaToolchains.launcherFor {
+             languageVersion.set(JavaLanguageVersion.of(25))
+         })
     }
 }
 
@@ -78,7 +81,7 @@ processResources {
     inputs.properties props
     filteringCharset 'UTF-8'
     filesMatching('plugin.yml') {
-        expand props
+        expand(version: project.version)
     }
 }
 tasks.named("shadowJar") {
