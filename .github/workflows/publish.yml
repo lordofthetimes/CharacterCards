@@ -96,5 +96,5 @@ jobs:
           **You can download this version [here](https://modrinth.com/plugin/character-cards/version/${VERSION})!**" \
           '{"content": $content, "flags": 4}' | \
           curl -X POST "${{ secrets.DISCORD_WEBHOOK }}" \
-        -H "Content-Type: application/json" \
+          -H "Content-Type: application/json" \
           -d @-
