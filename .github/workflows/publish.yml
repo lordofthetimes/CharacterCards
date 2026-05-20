@@ -1,11 +1,6 @@
 name: Publish Release
 on:
   workflow_dispatch:
-    inputs:
-      changelog:
-        description: 'Changelog'
-        required: true
-        type: string
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -13,8 +8,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Get version from gradle.properties
-        run: echo "VERSION=$(grep 'version=' gradle.properties | cut -d'=' -f2)" >> $GITHUB_ENV
+      - name: Get version from gradle.properties and changelog from CHANGELOG.md
+        run: |-
+          echo "VERSION=$(grep 'version=' gradle.properties | cut -d'=' -f2)" >> $GITHUB_ENV
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -34,36 +30,5 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.VERSION }}
-          body: |
-            ## Character Cards ${{ env.VERSION }}
-
-            ${{ github.event.inputs.changelog }}
+          body_path: CHANGELOG.md
           files: build/libs/CharacterCard-${{ env.VERSION }}.jar
-
-      - name: Publish to Modrinth
-        uses: cloudnode-pro/modrinth-publish@v2
-        with:
-          token: ${{ secrets.MODRINTH_SECRET }}
-          project: bmeFJq7B
-          version: ${{ env.VERSION }}
-          channel: release
-          loaders: |-
-            paper
-            purpur
-          game-versions: 1.21.x
-          files: build/libs/CharacterCard-${{ env.VERSION }}.jar
-          changelog: |
-            ## Character Cards ${{ env.VERSION }}
-
-            ${{ github.event.inputs.changelog }}
-
-            **To update the plugin, just delete the old version and drag the new one into the plugins folder. I recommend to first boot up test server and see config changes**
-            If you find any issues or want to suggest features, please open an issue on my github repo [--> here <--](https://github.com/lordofthetimes/CharacterCards/issues)
-
-      - name: Notify Discord
-        run: |
-          CONTENT="## Character Cards ${{ env.VERSION }}\n\n${{ github.event.inputs.changelog }}\n\n**You can download this version [here](https://modrinth.com/plugin/character-cards/version/${{ env.VERSION }})!**"
-          jq -n --arg content "$CONTENT" '{"content": $content, "flags": 4}' | \
-          curl -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
-            -H "Content-Type: application/json" \
-            -d @-
