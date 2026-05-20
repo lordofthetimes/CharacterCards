@@ -10,6 +10,8 @@ jobs:
 
       - name: Get version from gradle.properties and changelog from CHANGELOG.md
         run: |-
+          set +H
+          set -f
           echo "VERSION=$(grep 'version=' gradle.properties | cut -d'=' -f2)" >> $GITHUB_ENV
           {
             echo "CHANGELOG<<CHANGELOG_EOF"
