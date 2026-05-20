@@ -13,8 +13,9 @@ jobs:
     steps:
       - name: Notify Discord
         run: |
-          CONTENT="## Character Cards TEST\n\n${{ github.event.inputs.changelog }}\n\n**You can download this version [here](https://modrinth.com/plugin/character-cards/version/TEST)!**"
+          CHANGELOG="${{ github.event.inputs.changelog }}"
+          CONTENT="$(printf '## Character Cards TEST\n\n%s\n\n**You can download this version [here](https://modrinth.com/plugin/character-cards/version/TEST)!**' "$CHANGELOG")"
           jq -n --arg content "$CONTENT" '{"content": $content, "flags": 4}' | \
-          curl -X POST "${{ secrets.DISCORD_WEBHOOK }}" \
+          curl -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
             -H "Content-Type: application/json" \
             -d @-
