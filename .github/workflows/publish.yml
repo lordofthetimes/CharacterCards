@@ -11,9 +11,11 @@ jobs:
       - name: Get version from gradle.properties and changelog from CHANGELOG.md
         run: |-
           echo "VERSION=$(grep 'version=' gradle.properties | cut -d'=' -f2)" >> $GITHUB_ENV
-          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
-          cat CHANGELOG.md >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          {
+            echo "CHANGELOG<<CHANGELOG_EOF"
+            cat CHANGELOG.md
+            echo "CHANGELOG_EOF"
+          } >> $GITHUB_ENV
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
