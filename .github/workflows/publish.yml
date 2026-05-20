@@ -53,6 +53,12 @@ jobs:
         run: |
           echo "content=$(jq -Rs . CHANGELOG.md)" >> $GITHUB_OUTPUT
 
+      - name: Download plugin jar artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: plugin-jar
+          path: build/libs/
+
       - name: Publish to Modrinth
         uses: Kir-Antipov/mc-publish@v3.3
         with:
