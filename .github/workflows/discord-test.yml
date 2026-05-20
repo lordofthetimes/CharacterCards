@@ -1,0 +1,25 @@
+name: Test Discord
+on:
+  workflow_dispatch:
+    inputs:
+      changelog:
+        description: 'Changelog'
+        required: true
+        type: string
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Discord
+        run: |
+          CHANGELOG="${{ github.event.inputs.changelog }}"
+          jq -n --arg content "## Character Cards TEST
+
+          ${CHANGELOG}
+          
+          **You can download this version [here](https://modrinth.com/plugin/character-cards/version/TEST)!**" \
+                    '{"content": $content, "flags": 4}' | \
+                    curl -X POST "${{ secrets.DISCORD_WEBHOOK }}" \
+                      -H "Content-Type: application/json" \
+                      -d @-
