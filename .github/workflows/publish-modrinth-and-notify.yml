@@ -1,6 +1,7 @@
 on:
-  release:
-    types: [published]
+  workflow_run:
+    workflows: [ "Publish Release" ]
+    types: [ completed ]
 jobs:
   modrinth:
     runs-on: ubuntu-latest
