@@ -28,23 +28,11 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew shadowJar
 
-      - name: Create release changelog
-        run: |
-            cat > RELEASE_CHANGELOG.md <<EOF
-            ## Character Cards ${VERSION}
-            
-            $(cat CHANGELOG.md)
-            
-            **To update the plugin, just delete the old version and drag the new one into the plugins folder. I recommend to first boot up test server and see config changes**
-            
-            If you find any issues or want to suggest features, please open an issue on my github repo [--> here <--](https://github.com/lordofthetimes/CharacterCards/issues)
-            EOF
-
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.VERSION }}
-          body_path: RELEASE_CHANGELOG.md
+          body_path: CHANGELOG.md
           files: build/libs/CharacterCard-${{ env.VERSION }}.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
@@ -53,3 +41,72 @@ jobs:
         with:
           name: plugin-jar
           path: build/libs/CharacterCard-${{ env.VERSION }}.jar
+  modrinth:
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read changelog
+        id: changelog
+        shell: bash
+        run: |
+          {
+            echo 'content<<EOF'
+            cat CHANGELOG.md
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Publish to Modrinth
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          modrinth-id: bmeFJq7B
+          modrinth-token: ${{ secrets.MODRINTH_SECRET }}
+
+          files: build/libs/CharacterCard-${{ env.VERSION }}.jar
+          version: ${{ env.VERSION }}
+          version-type: release
+
+          loaders: |
+            paper
+            purpur
+
+          game-versions: |
+            1.21.x
+            26.1.x
+
+          changelog: |
+            # CharacterCards ${{ env.VERSION }}
+            
+            ${{ steps.changelog.outputs.content }}
+            
+            **To update the plugin, just delete the old version and drag the new one into the plugins folder. I recommend to first boot up test server and see config changes**
+            
+            If you find any issues or want to suggest features, please open an issue on my github repo [--> here <--](https://github.com/lordofthetimes/CharacterCards/issues)
+            
+
+
+  discord:
+    runs-on: ubuntu-latest
+    needs: modrinth
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get version from gradle.properties
+        run: echo "VERSION=$(grep 'version=' gradle.properties | cut -d'=' -f2)" >> $GITHUB_ENV
+
+      - name: Notify Discord
+        run: |
+          CHANGELOG=$(cat CHANGELOG.md)
+          VERSION="${{ env.VERSION }}"
+          jq -n --arg content "## Character Cards ${VERSION}
+
+          ${CHANGELOG}
+
+          **You can download this version [here](https://modrinth.com/plugin/character-cards/version/${VERSION})!**" \
+          '{"content": $content, "flags": 4}' | \
+          curl -X POST "${{ secrets.DISCORD_WEBHOOK }}" \
+          -H "Content-Type: application/json" \
+          -d @-
