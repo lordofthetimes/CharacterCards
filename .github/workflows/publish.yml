@@ -53,7 +53,7 @@ jobs:
 
       - name: Read changelog
         run: |
-          echo 'CHANGELOG<<CHANGELOG_END"' >> $GITHUB_ENV
+          echo 'CHANGELOG<<CHANGELOG_END' >> $GITHUB_ENV
           cat CHANGELOG.md >> $GITHUB_ENV
           echo 'CHANGELOG_END' >> $GITHUB_ENV
 
