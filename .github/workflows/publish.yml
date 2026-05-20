@@ -48,15 +48,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Read changelog
+      - name: Load changelog
         id: changelog
-        shell: bash
         run: |
-          {
-            echo 'content<<EOF'
-            cat CHANGELOG.md
-            echo 'EOF'
-          } >> "$GITHUB_OUTPUT"
+          echo "content=$(jq -Rs . CHANGELOG.md)" >> $GITHUB_OUTPUT
 
       - name: Publish to Modrinth
         uses: Kir-Antipov/mc-publish@v3.3
@@ -79,7 +74,7 @@ jobs:
           changelog: |
             # CharacterCards ${{ env.VERSION }}
             
-            ${{ steps.changelog.outputs.content }}
+            ${{ fromJSON(steps.changelog.outputs.content) }}
             
             **To update the plugin, just delete the old version and drag the new one into the plugins folder. I recommend to first boot up test server and see config changes**
             
