@@ -1,3 +1,2 @@
-- Added support for 26.2.x
-- Now all default values for character card are in the config
-- Default values are picked at random from the list in the config
+- Added max length for player setable values into config
+- NOTE : This update has an automatic config migration. Automatic config backup is saved into preV8backup.yaml

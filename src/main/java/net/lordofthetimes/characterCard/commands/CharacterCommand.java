@@ -31,15 +31,9 @@ public class CharacterCommand {
     private final CharacterCard plugin;
     private final DatabaseManager db;
     private final HashMap<UUID, Long> lastUse = new HashMap<>();
+    private final YamlDocument config;
 
     private String ageMode;
-    public boolean nameEnabled;
-    public boolean ageEnabled;
-    public boolean raceEnabled;
-    public boolean genderEnabled;
-    public boolean religionEnabled;
-    public boolean descriptionEnabled;
-    public boolean loreEnabled;
 
     public String nameMessage;
     public String ageMessage;
@@ -54,6 +48,7 @@ public class CharacterCommand {
     public CharacterCommand(CharacterCard plugin, DatabaseManager db) {
         this.plugin = plugin;
         this.db = db;
+        this.config = plugin.config;
 
         loadCharacterSettings();
 
@@ -138,7 +133,7 @@ public class CharacterCommand {
         CommandAPICommand characterSet = new CommandAPICommand("set")
                 .withPermission("charactercard.character.set");
 
-        if(nameEnabled){
+        if(config.getBoolean("name.enabled")){
             characterSet.withSubcommand(
                     new CommandAPICommand("name")
                             .withPermission("charactercard.character.set")
@@ -147,7 +142,7 @@ public class CharacterCommand {
             );
         }
 
-        if(ageMode.equals("SET") && ageEnabled){
+        if(ageMode.equals("SET") && config.getBoolean("age.enabled")){
             characterSet.withSubcommand(
                     new CommandAPICommand("age")
                             .withPermission("charactercard.character.set")
@@ -156,7 +151,7 @@ public class CharacterCommand {
             );
         }
 
-        if(raceEnabled){
+        if(config.getBoolean("race.enabled")){
             characterSet.withSubcommand(
                     new CommandAPICommand("race")
                             .withPermission("charactercard.character.set")
@@ -165,7 +160,7 @@ public class CharacterCommand {
             );
         }
 
-        if(genderEnabled){
+        if(config.getBoolean("gender.enabled")){
             characterSet.withSubcommand(
                     new CommandAPICommand("gender")
                             .withPermission("charactercard.character.set")
@@ -174,7 +169,7 @@ public class CharacterCommand {
             );
         }
 
-        if(religionEnabled){
+        if(config.getBoolean("religion.enabled")){
             characterSet.withSubcommand(
                     new CommandAPICommand("religion")
                             .withPermission("charactercard.character.set")
@@ -183,7 +178,7 @@ public class CharacterCommand {
             );
         }
 
-        if(descriptionEnabled){
+        if(config.getBoolean("description.enabled")){
             characterSet.withSubcommand(
                     new CommandAPICommand("description")
                             .withPermission("charactercard.character.set")
@@ -192,7 +187,7 @@ public class CharacterCommand {
             );
         }
 
-        if(loreEnabled){
+        if(config.getBoolean("lore.enabled")){
             characterSet.withSubcommand(
                     new CommandAPICommand("lore")
                             .withPermission("charactercard.character.set")
@@ -210,6 +205,12 @@ public class CharacterCommand {
     private void setName(Player player,String name){
 
         if(isOnCooldown(player)) return;
+
+        int maxLength = config.getInt("name.maxLength");
+        if(maxLength > name.length()){
+            MessageSender.sendMessage(player,"<red>Character name has max length of " + maxLength + " !/red>");
+            return;
+        }
 
         if(plugin.essentialsXEnabled){
             plugin.essentials.updateNickname(player,name);
@@ -230,6 +231,12 @@ public class CharacterCommand {
 
         if(isOnCooldown(player)) return;
 
+        int maxLength = config.getInt("lore.maxLength");
+        if(maxLength > lore.length()){
+            MessageSender.sendMessage(player,"<red>Character lore has max length of " + maxLength + " !/red>");
+            return;
+        }
+
         db.updateLore(lore.replaceAll("&(#[0-9a-fA-F]{6}|[0-9a-fk-orA-FK-OR])", ""),player.getUniqueId()).thenAccept(success ->{
             Bukkit.getScheduler().runTask(plugin, () -> {
                 if(success) {
@@ -244,6 +251,12 @@ public class CharacterCommand {
     private void setAge(Player player, String age){
 
         if(isOnCooldown(player)) return;
+
+        int maxLength = config.getInt("age.maxLength");
+        if(maxLength > age.length()){
+            MessageSender.sendMessage(player,"<red>Character age has max length of " + maxLength + " !/red>");
+            return;
+        }
 
         db.updateAge(age.replaceAll("&(#[0-9a-fA-F]{6}|[0-9a-fk-orA-FK-OR])", ""),player.getUniqueId()).thenAccept(success ->{
             Bukkit.getScheduler().runTask(plugin, () -> {
@@ -260,6 +273,12 @@ public class CharacterCommand {
 
         if(isOnCooldown(player)) return;
 
+        int maxLength = config.getInt("race.maxLength");
+        if(maxLength > updateRace.length()){
+            MessageSender.sendMessage(player,"<red>Character race has max length of " + maxLength + " !/red>");
+            return;
+        }
+
         db.updateRace(updateRace.replaceAll("&(#[0-9a-fA-F]{6}|[0-9a-fk-orA-FK-OR])", ""),player.getUniqueId()).thenAccept(success ->{
             Bukkit.getScheduler().runTask(plugin, () -> {
                 if(success) {
@@ -274,6 +293,12 @@ public class CharacterCommand {
     private void setDescription(Player player, String description){
 
         if(isOnCooldown(player)) return;
+
+        int maxLength = config.getInt("description.maxLength");
+        if(maxLength > description.length()){
+            MessageSender.sendMessage(player,"<red>Character description has max length of " + maxLength + " !/red>");
+            return;
+        }
 
         db.updateDescription(description.replaceAll("&(#[0-9a-fA-F]{6}|[0-9a-fk-orA-FK-OR])", ""),player.getUniqueId()).thenAccept(success ->{
             Bukkit.getScheduler().runTask(plugin, () -> {
@@ -290,6 +315,12 @@ public class CharacterCommand {
 
         if(isOnCooldown(player)) return;
 
+        int maxLength = config.getInt("gender.maxLength");
+        if(maxLength > gender.length()){
+            MessageSender.sendMessage(player,"<red>Character gender has max length of " + maxLength + " !/red>");
+            return;
+        }
+
         db.updateGender(gender.replaceAll("&(#[0-9a-fA-F]{6}|[0-9a-fk-orA-FK-OR])", ""),player.getUniqueId()).thenAccept(success ->{
             Bukkit.getScheduler().runTask(plugin, () -> {
                 if(success) {
@@ -304,6 +335,12 @@ public class CharacterCommand {
     private void setReligion(Player player, String religion){
 
         if(isOnCooldown(player)) return;
+
+        int maxLength = config.getInt("religion.maxLength");
+        if(maxLength > religion.length()){
+            MessageSender.sendMessage(player,"<red>Character religion has max length of " + maxLength + " !/red>");
+            return;
+        }
 
         db.updateReligion(religion.replaceAll("&(#[0-9a-fA-F]{6}|[0-9a-fk-orA-FK-OR])", ""),player.getUniqueId()).thenAccept(success ->{
             Bukkit.getScheduler().runTask(plugin, () -> {
@@ -339,11 +376,11 @@ public class CharacterCommand {
         BookMeta meta = (BookMeta) bookItem.getItemMeta();
         String page1String = "";
 
-        if(nameEnabled){
+        if(config.getBoolean("name.enabled")){
             page1String += nameMessage.replace("<%name%>",name);
         }
 
-        if(ageEnabled){
+        if(config.getBoolean("age.enabled")){
             if(ageMode.equals("SET")){
                 page1String += ageMessage.replace("<%age%>",age);
             }
@@ -352,15 +389,15 @@ public class CharacterCommand {
             }
         }
 
-        if(raceEnabled){
+        if(config.getBoolean("race.enabled")){
             page1String += raceMessage.replace("<%race%>",race);
         }
 
-        if(genderEnabled){
+        if(config.getBoolean("gender.enabled")){
             page1String += genderMessage.replace("<%gender%>",gender);
         }
 
-        if(religionEnabled){
+        if(config.getBoolean("religion.enabled")){
             page1String += religionMessage.replace("<%religion%>",religion);
         }
 
@@ -377,13 +414,13 @@ public class CharacterCommand {
             }
         }
 
-        if(descriptionEnabled){
+        if(config.getBoolean("description.enabled")){
             page1String += descriptionMessage.replace("<%description%>",description);
         }
 
         String page2String = "";
 
-        if(loreEnabled){
+        if(config.getBoolean("lore.enabled")){
             page2String += loreMessage.replace("<%lore%>",lore);
         }
 
@@ -419,11 +456,11 @@ public class CharacterCommand {
 
         part.add("<gold><bold>———===[ Character Card ]===———</bold></gold>\n");
 
-        if(nameEnabled){
+        if(config.getBoolean("name.enabled")){
             part.add(nameMessage.replace("<%name%>",name));
         }
 
-        if(ageEnabled){
+        if(config.getBoolean("age.enabled")){
             if(ageMode.equals("SET")){
                 part.add(
                         ageMessage.replace("<%age%>",age)
@@ -436,15 +473,15 @@ public class CharacterCommand {
             }
         }
 
-        if(raceEnabled){
+        if(config.getBoolean("race.enabled")){
             part.add(raceMessage.replace("<%race%>",race));
         }
 
-        if(genderEnabled){
+        if(config.getBoolean("gender.enabled")){
             part.add(genderMessage.replace("<%gender%>",gender));
         }
 
-        if(religionEnabled){
+        if(config.getBoolean("religion.enabled")){
             part.add(religionMessage.replace("<%religion%>",religion));
         }
 
@@ -461,11 +498,11 @@ public class CharacterCommand {
             }
         }
 
-        if(descriptionEnabled){
+        if(config.getBoolean("description.enabled")){
             part.add(descriptionMessage.replace("<%description%>",description) + "\n");
         }
 
-        if(loreEnabled){
+        if(config.getBoolean("lore.enabled")){
             part.add(loreMessage.replace("<%lore%>",lore));
         }
 
@@ -579,23 +616,15 @@ public class CharacterCommand {
     }
 
     public void loadCharacterSettings(){
-        this.ageMode = plugin.config.getString("ageMode");
+        this.ageMode = plugin.config.getString("age.mode");
 
-        this.nameEnabled = plugin.config.getBoolean("name");
-        this.ageEnabled = plugin.config.getBoolean("age");
-        this.raceEnabled = plugin.config.getBoolean("race");
-        this.genderEnabled = plugin.config.getBoolean("gender");
-        this.religionEnabled = plugin.config.getBoolean("religion");
-        this.descriptionEnabled = plugin.config.getBoolean("description");
-        this.loreEnabled = plugin.config.getBoolean("lore");
-
-        this.nameMessage = plugin.config.getString("nameMessage");
-        this.ageMessage = plugin.config.getString("ageMessage");
-        this.raceMessage = plugin.config.getString("raceMessage");
-        this.genderMessage = plugin.config.getString("genderMessage");
-        this.religionMessage = plugin.config.getString("religionMessage");
-        this.descriptionMessage = plugin.config.getString("descriptionMessage");
-        this.loreMessage = plugin.config.getString("loreMessage");
+        this.nameMessage = plugin.config.getString("name.message");
+        this.ageMessage = plugin.config.getString("age.message");
+        this.raceMessage = plugin.config.getString("race.message");
+        this.genderMessage = plugin.config.getString("gender.message");
+        this.religionMessage = plugin.config.getString("religion.message");
+        this.descriptionMessage = plugin.config.getString("description.message");
+        this.loreMessage = plugin.config.getString("lore.message");
         this.townMessage = plugin.config.getString("lands.townsMessage");
         this.nationsMessage = plugin.config.getString("lands.nationsMessage");
 

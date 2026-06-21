@@ -79,6 +79,7 @@ jobs:
           game-versions: |
             1.21.x
             26.1.x
+            26.2
 
           changelog: |
             # CharacterCards ${{ env.VERSION }}

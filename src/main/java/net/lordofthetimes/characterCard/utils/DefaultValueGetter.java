@@ -8,49 +8,49 @@ import java.util.Random;
 public class DefaultValueGetter {
     static public String getDefaultName(YamlDocument config){
         Random random = new Random();
-        List<String> values = config.getStringList("defaultName");
+        List<String> values = config.getStringList("name.default");
 
         return values.get(random.nextInt(values.size()));
     }
 
     static public String getDefaultAge(YamlDocument config){
         Random random = new Random();
-        List<String> values = config.getStringList("defaultAge");
+        List<String> values = config.getStringList("age.default");
 
         return values.get(random.nextInt(values.size()));
     }
 
     static public String getDefaultRace(YamlDocument config){
         Random random = new Random();
-        List<String> values = config.getStringList("defaultRace");
+        List<String> values = config.getStringList("race.default");
 
         return values.get(random.nextInt(values.size()));
     }
 
     static public String getDefaultGender(YamlDocument config){
         Random random = new Random();
-        List<String> values = config.getStringList("defaultGender");
+        List<String> values = config.getStringList("gender.default");
 
         return values.get(random.nextInt(values.size()));
     }
 
     static public String getDefaultReligion(YamlDocument config){
         Random random = new Random();
-        List<String> values = config.getStringList("defaultReligion");
+        List<String> values = config.getStringList("religion.default");
 
         return values.get(random.nextInt(values.size()));
     }
 
     static public String getDefaultDescription(YamlDocument config){
         Random random = new Random();
-        List<String> values = config.getStringList("defaultDescription");
+        List<String> values = config.getStringList("description.default");
 
         return values.get(random.nextInt(values.size()));
     }
 
     static public String getDefaultLore(YamlDocument config){
         Random random = new Random();
-        List<String> values = config.getStringList("defaultLore");
+        List<String> values = config.getStringList("lore.default");
 
         return values.get(random.nextInt(values.size()));
     }

@@ -7,80 +7,102 @@
 # This decides if plugin will check for new versions on reload or server start [default - true]
 checkForUpdate: true
 
-# Enable name field [default - true]
-name: true
+# ╔                                              ╗
+# ║                CARD VALUES                   ║
+# ╚                                              ╝
+name:
+  # Enable name field [default - true]
+  enabled: true
+  # Message string that will be used, use <%name%> for a placeholder
+  message: "<gold><bold>Name: </bold><%name%></gold>"
+  # Default value [Picks random from the list]
+  default:
+    - "<gray>None</gray>"
+    - "<gray>None too</gray>"
 
-# Message string that will be used for name, use <%name%> for a placeholder
-nameMessage: "<gold><bold>Name: </bold><%name%></gold>"
-
-# Default name value [Picks random from the list]
-defaultName:
-  - "<gray>None</gray>"
-  - "<gray>None too</gray>"
+  # Max length
+  maxLength: 20
 
 # Enable age field [default - true]
-age: true
+age:
+  # Enable age field [default - true]
+  enabled: true
 
-# Should age be available to set for players or should it be based on when the player joined [default - SET] (options : SET,JOIN)
-# This setting is fully backwards compatible and can be changed at any time
-ageMode: SET
+  # Should age be available to set for players or should it be based on when the player joined [default - SET] (options : SET,JOIN)
+  # This setting is fully backwards compatible and can be changed at any time
+  mode: SET
 
-# Message string that will be used for age, use <%age%> for a placeholder
-ageMessage: "\n<gold><bold>Age: </bold><%age%></gold>"
+  # Message string that will be used, use <%age%> for a placeholder
+  message: "\n<gold><bold>Age: </bold><%age%></gold>"
+  # Default value [Picks random from the list]
+  default:
+    - "<gray>None</gray>"
 
-# Default age value when ageMode is SET [Picks random from the list]
-defaultAge:
-  - "<gray>None</gray>"
+  # Max length when ageMode is SET
+  maxLength: 20
 
-# Enable race field [default - true]
-race: true
 
-# Message string that will be used for race, use <%race%> for a placeholder
-raceMessage: "\n<gold><bold>Race: </bold><%race%></gold>"
+race:
+  # Enable race field [default - true]
+  enabled: true
+  # Message string that will be used, use <%race%> for a placeholder
+  message: "\n<gold><bold>Race: </bold><%race%></gold>"
+  # Default value [Picks random from the list]
+  default:
+    - "<gray>None</gray>"
 
-# Default race value [Picks random from the list]
-defaultRace:
-  - "<gray>None</gray>"
+  # Max length
+  maxLength: 20
 
-# Enable gender field [default - true]
-gender: true
 
-# Message string that will be used for gender, use <%gender%> for a placeholder
-genderMessage: "\n<gold><bold>Gender: </bold><%gender%></gold>\n"
+gender:
+  # Enable gender field [default - true]
+  enabled: true
+  # Message string that will be used, use <%gender%> for a placeholder
+  message: "\n<gold><bold>Gender: </bold><%gender%></gold>\n"
+  # Default value [Picks random from the list]
+  default:
+    - "<gray>None</gray>"
 
-# Default gender value [Picks random from the list]
-defaultGender:
-  - "<gray>None</gray>"
+  # Max length
+  maxLength: 10
 
-# Enable religion field [default - true]
-religion: true
 
-# Message string that will be used for religion, use <%religion%> for a placeholder
-religionMessage: "\n<gold><bold>Religion: </bold><%religion%></gold>\n"
+religion:
+  # Enable religion field [default - true]
+  enabled: true
+  # Message string that will be used, use <%religion%> for a placeholder
+  message: "\n<gold><bold>Religion: </bold><%religion%></gold>\n"
+  # Default value [Picks random from the list]
+  default:
+    - "<gray>None</gray>"
 
-# Default religion value [Picks random from the list]
-defaultReligion:
-  - "<gray>None</gray>"
+  # Max length
+  maxLength: 20
 
-# Enable description field [default - true]
-description: true
+description:
+  # Enable description field [default - true]
+  enabled: true
+  # Message string that will be used, use <%description%> for a placeholder
+  message: "\n<gold><bold>Description: </bold><%description%></gold>"
+  # Default value [Picks random from the list]
+  default:
+    - "<gray>None</gray>"
 
-# Message string that will be used for description, use <%description%> for a placeholder
-descriptionMessage: "\n<gold><bold>Description: </bold><%description%></gold>"
+  # Max length
+  maxLength: 60
 
-# Default description value [Picks random from the list]
-defaultDescription:
-  - "<gray>None</gray>"
+lore:
+  # Enable lore field [default - true]
+  enabled: true
+  # Message string that will be used, use <%lore%> for a placeholder
+  message: "<black><bold>Lore: </bold><%lore%></black>"
+  # Default value [Picks random from the list]
+  default:
+    - "<gray>None</gray>"
 
-# Enable lore field [default - true]
-lore: true
-
-# Message string that will be used for lore, use <%lore%> for a placeholder
-loreMessage: "<black><bold>Lore: </bold><%lore%></black>"
-
-# Default lore value [Picks random from the list]
-defaultLore:
-  - "<gray>None</gray>"
+  # Max length
+  maxLength: 200
 
 # ╔                                              ╗
 # ║              SHIFT CLICK CARD                ║
@@ -166,4 +188,4 @@ database:
 
 
 # DO NOT CHANGE VERSION - ESSENTIAL FOR CONFIG UPDATES
-config-version: 7
+config-version: 8

@@ -20,6 +20,7 @@ import net.lordofthetimes.characterCard.hooks.bstats.Metrics;
 import net.lordofthetimes.characterCard.listeners.LocalManager;
 import net.lordofthetimes.characterCard.listeners.CharacterManager;
 import net.lordofthetimes.characterCard.utils.CharacterCardLogger;
+import net.lordofthetimes.characterCard.utils.ConfigMigration;
 import net.lordofthetimes.characterCard.utils.UpdateChecker;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -79,8 +80,10 @@ public final class CharacterCard extends JavaPlugin {
                 "################################");
 
         try {
+            File configFile = new File(getDataFolder(), "config.yml");
+
             config = YamlDocument.create(
-                    new File(this.getDataFolder(), "config.yml"),
+                    configFile,
                     this.getResource("config.yml"),
                     GeneralSettings.DEFAULT,
                     LoaderSettings.DEFAULT,
@@ -90,7 +93,8 @@ public final class CharacterCard extends JavaPlugin {
                             .setOptionSorting(UpdaterSettings.OptionSorting.SORT_BY_DEFAULTS)
                             .build()
             );
-            config.update();
+            ConfigMigration.migrateAndUpdate(config,this, configFile);
+            config.save();
         } catch (Exception e) {
             logger.logError("Failed to load or update config! Plugin is being disabled ",e);
             onDisable();

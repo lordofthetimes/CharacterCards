@@ -21,7 +21,6 @@ public class DatabaseManager {
     public final CharacterCardLogger logger;
     private final Boolean debug;
     private final String path;
-    private final String ageMode;
     private final List<String> columns = List.of("loreName","age","race","description","lore","gender","religion","joinTime");
     private final YamlDocument config;
     private final ExecutorService dbExecutor =
@@ -35,7 +34,6 @@ public class DatabaseManager {
         this.config = plugin.config;
         this.debug = config.getBoolean("database.debug");
         this.path = config.getString("database.path");
-        this.ageMode = config.getString("ageMode");
     }
 
     public void setPlayersDataCache(ConcurrentHashMap<UUID, ConcurrentHashMap<String,String>> map){
