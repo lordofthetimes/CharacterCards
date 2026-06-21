@@ -3,6 +3,7 @@ package net.lordofthetimes.characterCard.database;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import net.lordofthetimes.characterCard.CharacterCard;
 import net.lordofthetimes.characterCard.utils.CharacterCardLogger;
+import net.lordofthetimes.characterCard.utils.DefaultValueGetter;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -22,7 +23,7 @@ public class DatabaseManager {
     private final String path;
     private final String ageMode;
     private final List<String> columns = List.of("loreName","age","race","description","lore","gender","religion","joinTime");
-    private final String defaultValue = "<gray>None</gray>";
+    private final YamlDocument config;
     private final ExecutorService dbExecutor =
             Executors.newSingleThreadExecutor();
 
@@ -31,7 +32,7 @@ public class DatabaseManager {
     public DatabaseManager(CharacterCard plugin) {
         this.plugin = plugin;
         this.logger = plugin.logger;
-        YamlDocument config = plugin.config;
+        this.config = plugin.config;
         this.debug = config.getBoolean("database.debug");
         this.path = config.getString("database.path");
         this.ageMode = config.getString("ageMode");
@@ -56,13 +57,13 @@ public class DatabaseManager {
 
     public ConcurrentHashMap<String, String> getDefaultDataCache(String joinTime){
         ConcurrentHashMap<String,String> map = new ConcurrentHashMap<>();
-        map.put("loreName",defaultValue);
-        map.put("age",defaultValue);
-        map.put("race",defaultValue);
-        map.put("description",defaultValue);
-        map.put("lore",defaultValue);
-        map.put("gender",defaultValue);
-        map.put("religion",defaultValue);
+        map.put("loreName", DefaultValueGetter.getDefaultName(config));
+        map.put("age", DefaultValueGetter.getDefaultAge(config));
+        map.put("race", DefaultValueGetter.getDefaultRace(config));
+        map.put("description", DefaultValueGetter.getDefaultDescription(config));
+        map.put("lore", DefaultValueGetter.getDefaultLore(config));
+        map.put("gender", DefaultValueGetter.getDefaultGender(config));
+        map.put("religion", DefaultValueGetter.getDefaultReligion(config));
         map.put("joinTime",joinTime);
         return map;
     }
@@ -116,7 +117,7 @@ public class DatabaseManager {
                                     updateQuery.setLong(1, System.currentTimeMillis());
                                 }
                                 else{
-                                    updateQuery.setString(1, defaultValue);
+                                    updateQuery.setString(1, config.getString("defaultAge"));
                                 }
                                 updateQuery.executeUpdate();
                                 logger.logInfo("Successfully filled in default data for all players in column : " + column);
@@ -308,14 +309,17 @@ public class DatabaseManager {
             }
             //
             try (PreparedStatement query = connection.prepareStatement(sql)){
-                query.setString(1, defaultValue);
-                query.setString(2, defaultValue);
-                query.setString(3, defaultValue);
-                query.setString(4, defaultValue);
-                query.setString(5, defaultValue);
-                query.setString(6, defaultValue);
-                query.setString(7, defaultValue);
+                query.setString(1, DefaultValueGetter.getDefaultName(config));
+                query.setString(2, DefaultValueGetter.getDefaultLore(config));
+                query.setString(3, DefaultValueGetter.getDefaultAge(config));
+                query.setString(4, DefaultValueGetter.getDefaultRace(config));
+                query.setString(5, DefaultValueGetter.getDefaultDescription(config));
+                query.setString(6, DefaultValueGetter.getDefaultGender(config));
+                query.setString(7, DefaultValueGetter.getDefaultReligion(config));
                 query.setString(8, uuid.toString());
+
+                clearPlayerDataCache(uuid);
+
                 return query.executeUpdate() > 0;
             } catch (SQLException e) {
                 plugin.getLogger().log(Level.SEVERE, "Player data update failed for uuid : " + uuid, e);

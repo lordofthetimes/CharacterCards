@@ -13,6 +13,11 @@ name: true
 # Message string that will be used for name, use <%name%> for a placeholder
 nameMessage: "<gold><bold>Name: </bold><%name%></gold>"
 
+# Default name value [Picks random from the list]
+defaultName:
+  - "<gray>None</gray>"
+  - "<gray>None too</gray>"
+
 # Enable age field [default - true]
 age: true
 
@@ -23,11 +28,19 @@ ageMode: SET
 # Message string that will be used for age, use <%age%> for a placeholder
 ageMessage: "\n<gold><bold>Age: </bold><%age%></gold>"
 
+# Default age value when ageMode is SET [Picks random from the list]
+defaultAge:
+  - "<gray>None</gray>"
+
 # Enable race field [default - true]
 race: true
 
 # Message string that will be used for race, use <%race%> for a placeholder
 raceMessage: "\n<gold><bold>Race: </bold><%race%></gold>"
+
+# Default race value [Picks random from the list]
+defaultRace:
+  - "<gray>None</gray>"
 
 # Enable gender field [default - true]
 gender: true
@@ -35,11 +48,19 @@ gender: true
 # Message string that will be used for gender, use <%gender%> for a placeholder
 genderMessage: "\n<gold><bold>Gender: </bold><%gender%></gold>\n"
 
+# Default gender value [Picks random from the list]
+defaultGender:
+  - "<gray>None</gray>"
+
 # Enable religion field [default - true]
 religion: true
 
 # Message string that will be used for religion, use <%religion%> for a placeholder
 religionMessage: "\n<gold><bold>Religion: </bold><%religion%></gold>\n"
+
+# Default religion value [Picks random from the list]
+defaultReligion:
+  - "<gray>None</gray>"
 
 # Enable description field [default - true]
 description: true
@@ -47,11 +68,19 @@ description: true
 # Message string that will be used for description, use <%description%> for a placeholder
 descriptionMessage: "\n<gold><bold>Description: </bold><%description%></gold>"
 
+# Default description value [Picks random from the list]
+defaultDescription:
+  - "<gray>None</gray>"
+
 # Enable lore field [default - true]
 lore: true
 
 # Message string that will be used for lore, use <%lore%> for a placeholder
 loreMessage: "<black><bold>Lore: </bold><%lore%></black>"
+
+# Default lore value [Picks random from the list]
+defaultLore:
+  - "<gray>None</gray>"
 
 # ╔                                              ╗
 # ║              SHIFT CLICK CARD                ║
@@ -137,4 +166,4 @@ database:
 
 
 # DO NOT CHANGE VERSION - ESSENTIAL FOR CONFIG UPDATES
-config-version: 6
+config-version: 7

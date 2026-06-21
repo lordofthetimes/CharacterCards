@@ -70,8 +70,6 @@ public final class CharacterCard extends JavaPlugin {
 
         String version = this.getPluginMeta().getVersion();
 
-
-        logger.logInfo("Enabling CharacterCard v" + version);
         logger.logInfo("\n################################\n\n" +
                 "▄▖▖▖▄▖▄▖▄▖▄▖▄▖▄▖▄▖  ▄▖▄▖▄▖▄ \n" +
                 "▌ ▙▌▌▌▙▘▌▌▌ ▐ ▙▖▙▘  ▌ ▌▌▙▘▌▌\n" +
