@@ -1,2 +1,2 @@
-- Added max length for player setable values into config
-- NOTE : This update has an automatic config migration. Automatic config backup is saved into preV8backup.yaml
+- fix maxLength checks to work properly
+- fix typos in some of the messages

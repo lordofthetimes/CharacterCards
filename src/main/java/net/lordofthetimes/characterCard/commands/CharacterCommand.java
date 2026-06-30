@@ -207,8 +207,8 @@ public class CharacterCommand {
         if(isOnCooldown(player)) return;
 
         int maxLength = config.getInt("name.maxLength");
-        if(maxLength > name.length()){
-            MessageSender.sendMessage(player,"<red>Character name has max length of " + maxLength + " !/red>");
+        if(maxLength <= name.length()){
+            MessageSender.sendMessage(player,"<red>Character name has max length of " + maxLength + "!</red>");
             return;
         }
 
@@ -232,8 +232,8 @@ public class CharacterCommand {
         if(isOnCooldown(player)) return;
 
         int maxLength = config.getInt("lore.maxLength");
-        if(maxLength > lore.length()){
-            MessageSender.sendMessage(player,"<red>Character lore has max length of " + maxLength + " !/red>");
+        if(maxLength <= lore.length()){
+            MessageSender.sendMessage(player,"<red>Character lore has max length of " + maxLength + "!</red>");
             return;
         }
 
@@ -253,8 +253,8 @@ public class CharacterCommand {
         if(isOnCooldown(player)) return;
 
         int maxLength = config.getInt("age.maxLength");
-        if(maxLength > age.length()){
-            MessageSender.sendMessage(player,"<red>Character age has max length of " + maxLength + " !/red>");
+        if(maxLength <= age.length()){
+            MessageSender.sendMessage(player,"<red>Character age has max length of " + maxLength + "!</red>");
             return;
         }
 
@@ -274,8 +274,8 @@ public class CharacterCommand {
         if(isOnCooldown(player)) return;
 
         int maxLength = config.getInt("race.maxLength");
-        if(maxLength > updateRace.length()){
-            MessageSender.sendMessage(player,"<red>Character race has max length of " + maxLength + " !/red>");
+        if(maxLength <= updateRace.length()){
+            MessageSender.sendMessage(player,"<red>Character race has max length of " + maxLength + "!</red>");
             return;
         }
 
@@ -295,8 +295,8 @@ public class CharacterCommand {
         if(isOnCooldown(player)) return;
 
         int maxLength = config.getInt("description.maxLength");
-        if(maxLength > description.length()){
-            MessageSender.sendMessage(player,"<red>Character description has max length of " + maxLength + " !/red>");
+        if(maxLength <= description.length()){
+            MessageSender.sendMessage(player,"<red>Character description has max length of " + maxLength + "!</red>");
             return;
         }
 
@@ -316,8 +316,8 @@ public class CharacterCommand {
         if(isOnCooldown(player)) return;
 
         int maxLength = config.getInt("gender.maxLength");
-        if(maxLength > gender.length()){
-            MessageSender.sendMessage(player,"<red>Character gender has max length of " + maxLength + " !/red>");
+        if(maxLength <= gender.length()){
+            MessageSender.sendMessage(player,"<red>Character gender has max length of " + maxLength + "!</red>");
             return;
         }
 
@@ -337,8 +337,8 @@ public class CharacterCommand {
         if(isOnCooldown(player)) return;
 
         int maxLength = config.getInt("religion.maxLength");
-        if(maxLength > religion.length()){
-            MessageSender.sendMessage(player,"<red>Character religion has max length of " + maxLength + " !/red>");
+        if(maxLength <= religion.length()){
+            MessageSender.sendMessage(player,"<red>Character religion has max length of " + maxLength + "!</red>");
             return;
         }
 
