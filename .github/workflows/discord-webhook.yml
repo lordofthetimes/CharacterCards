@@ -1,0 +1,27 @@
+name: Discord Webhook
+on:
+  workflow_dispatch:
+jobs:
+  discord:
+    runs-on: ubuntu-latest
+    needs: modrinth
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get version from gradle.properties
+        run: echo "VERSION=$(grep 'version=' gradle.properties | cut -d'=' -f2)" >> $GITHUB_ENV
+
+      - name: Notify Discord
+        run: |
+          CHANGELOG=$(cat CHANGELOG.md)
+          VERSION="${{ env.VERSION }}"
+          jq -n --arg content "## Character Cards ${VERSION}
+
+          ${CHANGELOG}
+
+          **You can download this version [here](https://modrinth.com/plugin/character-cards/version/${VERSION})!**" \
+          '{"content": $content, "flags": 4}' | \
+          curl -X POST "${{ secrets.DISCORD_WEBHOOK }}" \
+          -H "Content-Type: application/json" \
+          -d @-
