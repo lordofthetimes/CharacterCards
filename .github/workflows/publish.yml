@@ -42,7 +42,7 @@ jobs:
           name: plugin-jar
           path: build/libs/CharacterCard-${{ env.VERSION }}.jar
   modrinth:
-    needs: publish
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
