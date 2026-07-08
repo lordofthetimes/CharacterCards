@@ -1,5 +1,6 @@
 package net.lordofthetimes.characterCard.listeners;
 
+import dev.dejvokep.boostedyaml.YamlDocument;
 import net.lordofthetimes.characterCard.CharacterCard;
 import net.lordofthetimes.characterCard.database.DatabaseManager;
 import org.bukkit.Bukkit;
@@ -17,17 +18,14 @@ public class CharacterManager implements Listener {
 
     private final DatabaseManager db;
     private final CharacterCard plugin;
-
-    public boolean shiftCardEnabled;
-    public String mode;
+    private final YamlDocument config;
 
     private final HashSet<UUID> locked = new HashSet<>();
 
     public CharacterManager(DatabaseManager db, CharacterCard plugin) {
         this.db = db;
         this.plugin = plugin;
-        shiftCardEnabled = plugin.config.getBoolean("shiftCard.enabled");
-        mode = plugin.config.getString("shiftCard.mode");
+        this.config = plugin.config;
     }
 
     @EventHandler
@@ -55,7 +53,7 @@ public class CharacterManager implements Listener {
 
     @EventHandler
     public void shiftClickCard(PlayerInteractAtEntityEvent event){
-        if(!shiftCardEnabled || event.isCancelled()) return;
+        if(!config.getBoolean("shiftCard.enabled") || event.isCancelled()) return;
         if (event.getHand() != EquipmentSlot.HAND) return;
 
         Player player = event.getPlayer();
@@ -67,7 +65,7 @@ public class CharacterManager implements Listener {
         event.setCancelled(true);
         UUID uuid = player.getUniqueId();
         locked.add(uuid);
-        if(mode.equals("BOOK")){
+        if(config.getString("shiftCard.mode").equals("BOOK")){
             if(player.hasPermission("charactercard.character.book")){
                 plugin.characterCommand.openBook(player,interacted);
             }

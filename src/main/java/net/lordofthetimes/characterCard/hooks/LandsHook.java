@@ -14,15 +14,18 @@ import java.util.UUID;
 public class LandsHook {
 
     public final LandsIntegration api;
-    public final Boolean townsCard;
-    public final Boolean nationsCard;
+
+    public boolean townsCard;
+    public boolean nationsCard;
+
     public final YamlDocument config;
 
     public LandsHook(CharacterCard plugin, YamlDocument config) {
         api = LandsIntegration.of(plugin);
-        townsCard = config.getBoolean("lands.towns");
-        nationsCard = config.getBoolean("lands.nations");
+
         this.config = config;
+
+        loadLandsConfig();
     }           
 
     public String getLandsNames(UUID uuid){
@@ -56,5 +59,10 @@ public class LandsHook {
                 .toList();
         nationNames = nationNames.isEmpty() ? List.of("None") : nationNames;
         return String.join(", ",nationNames);
+    }
+
+    public void loadLandsConfig(){
+        townsCard = config.getBoolean("lands.towns");
+        nationsCard = config.getBoolean("lands.nations");
     }
 }

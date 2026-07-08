@@ -2,6 +2,7 @@ package net.lordofthetimes.characterCard.utils;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
+import dev.dejvokep.boostedyaml.YamlDocument;
 import net.lordofthetimes.characterCard.CharacterCard;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -16,16 +17,15 @@ import java.util.concurrent.CompletableFuture;
 public class UpdateChecker {
 
     private final CharacterCard plugin;
+    private final YamlDocument config;
     private final String version;
     private String latestVersion;
     private String changelog;
 
-    public final boolean checkForUpdate;
-
     public UpdateChecker(CharacterCard plugin, String version) {
         this.plugin = plugin;
         this.version = version;
-        checkForUpdate = plugin.config.getBoolean("checkForUpdate");
+        this.config = plugin.config;
         getInfo();
         sendVersionConsole();
     }
@@ -59,7 +59,7 @@ public class UpdateChecker {
     }
 
     public void sendVersionConsole(){
-        if(!checkForUpdate) return;
+        if(!config.getBoolean("checkForUpdate")) return;
         if(isNotLatest(version,latestVersion)){
             plugin.logger.logInfo("Current version of Character Cards is not the latest!");
             plugin.logger.logInfo("Running version " + version + " when latest version is " + latestVersion + "!");
@@ -71,7 +71,7 @@ public class UpdateChecker {
         }
     }
     public void sendVersionPlayer(Player player){
-        if(!checkForUpdate) return;
+        if(!config.getBoolean("checkForUpdate")) return;
         if(version.contains("experimental")){
             MessageSender.sendMessage(player,"<red><bold>This version of Character Cards is experimental! Please manually check for updates!</bold></red>");
             MessageSender.sendMessage(player,"<yellow>Running version<red><bold> " + version + "</bold></red>");

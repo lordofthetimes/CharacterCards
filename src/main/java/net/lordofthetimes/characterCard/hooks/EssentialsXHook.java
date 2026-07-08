@@ -19,9 +19,8 @@ public class EssentialsXHook {
 
     public final Essentials essentials;
     public final YamlDocument config;
-    public final boolean useNickname;
+
     public EssentialsXHook(YamlDocument config) {
-        this.useNickname = config.getBoolean("essentials.nickname");
         this.essentials = (Essentials) Bukkit.getPluginManager().getPlugin("Essentials");
         this.config = config;
     }

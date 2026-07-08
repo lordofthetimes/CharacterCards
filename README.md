@@ -21,6 +21,7 @@ Players can also use MiniMessage formatting to add color and effects to the text
 
 ### Commands:
 ```
+/charactercard-reload - reload config (diasbling commands or changing db settings requires restart!)
 /character help
 /character book <player> - opens a character card in form of a bug gui
 /character chat <player> - shows character card as formatted chat message
@@ -31,6 +32,7 @@ Players can also use MiniMessage formatting to add color and effects to the text
 ```
 ### Permissions
 ```
+charactercard.reload
 charactercard.character
 charactercard.character.set
 charactercard.character.book

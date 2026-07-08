@@ -50,7 +50,7 @@ public class CharacterCommand {
         this.db = db;
         this.config = plugin.config;
 
-        loadCharacterSettings();
+        loadCharacterConfig();
 
         CommandAPICommand character =  new CommandAPICommand("character")
                 .withPermission("charactercard.character")
@@ -555,6 +555,9 @@ public class CharacterCommand {
                 "<yellow><bold>By: <white>" + String.join(", ", plugin.getDescription().getAuthors()) + "</white></bold></yellow>\n" +
                 "<yellow><bold>Aliases: <green>profile</green> , <green>card</green></bold></yellow>\n" +
                 "<yellow><bold>Commands you have permission for:</bold></yellow>\n";
+        if(sender.hasPermission("charactercard.reload")){
+            help += "<green><bold>/character reload</bold></green>\n";
+        }
         if(sender.hasPermission("charactercard.character.set")){
             help += "<green><bold>/character set</bold></green>\n";
         }
@@ -615,7 +618,7 @@ public class CharacterCommand {
         return sb.toString().trim();
     }
 
-    public void loadCharacterSettings(){
+    public void loadCharacterConfig(){
         this.ageMode = plugin.config.getString("age.mode");
 
         this.nameMessage = plugin.config.getString("name.message");

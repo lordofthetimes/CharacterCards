@@ -10,9 +10,7 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.lordofthetimes.characterCard.CharacterCard;
 import net.lordofthetimes.characterCard.utils.MessageSender;
 import org.bukkit.Bukkit;
-import org.bukkit.Server;
 import org.bukkit.entity.Player;
-import org.checkerframework.checker.regex.qual.Regex;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +19,7 @@ import java.util.UUID;
 public class LocalCommand {
 
     private final CharacterCard plugin;
+    private final YamlDocument config;
 
     public final Map<UUID,Boolean> localMode = new HashMap<>();
     public final Map<UUID,Boolean> bypass = new HashMap<>();
@@ -35,15 +34,10 @@ public class LocalCommand {
     public String name;
 
     public LocalCommand(CharacterCard plugin){
-        YamlDocument config = plugin.config;
-        prefix = config.getString("localChat.prefix");
-        distance = config.getInt("localChat.distance");
-        name = config.getString("localChat.name");
-        formattingEnabled = config.getBoolean("localChat.format.enabled",true);
-        screamPrefix = config.getString("localChat.format.scream");
-        shoutPrefix = config.getString("localChat.format.shout");
-        mutterPrefix = config.getString("localChat.format.mutter");
-        whisperPrefix = config.getString("localChat.format.whisper");
+        this.config = plugin.config;
+
+        loadLocalConfig();
+
         this.plugin = plugin;
 
         new CommandAPICommand("local")
@@ -132,6 +126,17 @@ public class LocalCommand {
         else if(stringMessage.startsWith(whisperPrefix)) stringMessage =  stringMessage.replaceAll("^\\%s".formatted(whisperPrefix),"&o[Whispers]&r ");
         else if(stringMessage.startsWith(mutterPrefix)) stringMessage =  stringMessage.replaceAll("^\\%s".formatted(mutterPrefix),"&o[Mutters]&r ");
         return LegacyComponentSerializer.legacyAmpersand().deserialize(stringMessage);
+    }
+
+    public void loadLocalConfig(){
+        prefix = config.getString("localChat.prefix");
+        distance = config.getInt("localChat.distance");
+        name = config.getString("localChat.name");
+        formattingEnabled = config.getBoolean("localChat.format.enabled",true);
+        screamPrefix = config.getString("localChat.format.scream");
+        shoutPrefix = config.getString("localChat.format.shout");
+        mutterPrefix = config.getString("localChat.format.mutter");
+        whisperPrefix = config.getString("localChat.format.whisper");
     }
 
 }

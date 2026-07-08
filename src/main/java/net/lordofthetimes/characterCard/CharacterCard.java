@@ -11,6 +11,7 @@ import dev.jorel.commandapi.CommandAPIPaperConfig;
 import net.lordofthetimes.characterCard.commands.CharacterCommand;
 import net.lordofthetimes.characterCard.commands.LocalCommand;
 import net.lordofthetimes.characterCard.commands.RealNameCommand;
+import net.lordofthetimes.characterCard.commands.ReloadCommand;
 import net.lordofthetimes.characterCard.database.DatabaseManager;
 
 import net.lordofthetimes.characterCard.hooks.CharacterCardPlaceholderExpansion;
@@ -22,16 +23,10 @@ import net.lordofthetimes.characterCard.listeners.CharacterManager;
 import net.lordofthetimes.characterCard.utils.CharacterCardLogger;
 import net.lordofthetimes.characterCard.utils.ConfigMigration;
 import net.lordofthetimes.characterCard.utils.UpdateChecker;
-import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandMap;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 
@@ -54,6 +49,7 @@ public final class CharacterCard extends JavaPlugin {
     public RealNameCommand realNameCommand;
     public LocalCommand localCommand;
     public CharacterCommand characterCommand;
+    public ReloadCommand reloadCommand;
 
     public CharacterManager playerJoinListener;
     public LocalManager localManager;
@@ -150,6 +146,8 @@ public final class CharacterCard extends JavaPlugin {
         int pluginId = 28746;
         Metrics metrics = new Metrics(this, pluginId);
 
+        reloadCommand = new ReloadCommand(this);
+
     }
 
     @Override
@@ -173,5 +171,12 @@ public final class CharacterCard extends JavaPlugin {
         this.essentialsXEnabled = true;
         this.essentials = new EssentialsXHook(config);
         this.realNameCommand = new RealNameCommand(this);
+    }
+
+    public void reload() throws IOException {
+        config.reload();
+        characterCommand.loadCharacterConfig();
+        localCommand.loadLocalConfig();
+        lands.loadLandsConfig();
     }
 }

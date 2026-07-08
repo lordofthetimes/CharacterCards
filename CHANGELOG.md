@@ -1,2 +1,2 @@
-- fix maxLength checks to work properly
-- fix typos in some of the messages
+- added /charactercard-reload command (permission : charactercard.reload)
+- Remember! Disabling commands requires full server restart!
