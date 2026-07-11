@@ -103,7 +103,7 @@ public final class CharacterCard extends JavaPlugin {
             logger.logInfo("Lands detected, support enabled!");
             enableLandsSupport();
         }
-        logger.logError(String.valueOf("" + getServer().getPluginManager().getPlugin("Essentials")  + "&&" + config.getBoolean("essentials.enabled")));
+
         if (getServer().getPluginManager().getPlugin("Essentials") != null && config.getBoolean("essentials.enabled")) {
             logger.logInfo("Essentials detected, support enabled!");
             enableEssentialsXSupport();
