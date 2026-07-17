@@ -93,7 +93,6 @@ jobs:
                 "project_id": "ExxvCi0y",
                 "dependency_type": "embedded"
             }]
-            }]
 
           loaders: |
             paper
