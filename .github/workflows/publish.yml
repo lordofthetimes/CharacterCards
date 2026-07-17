@@ -72,6 +72,29 @@ jobs:
           version: ${{ env.VERSION }}
           version-type: release
 
+          dependencies: |-
+            [{
+                "project_id": "Ag2I6USg",
+                "dependency_type": "optional"
+            },
+            {
+                "project_id": "Vs77PB2W",
+                "dependency_type": "optional"
+            },
+            {
+                "project_id": "lKEzGugV",
+                "dependency_type": "optional"
+            },
+            {
+                "project_id": "hXiIvTyT",
+                "dependency_type": "optional"
+            },
+            {
+                "project_id": "ExxvCi0y",
+                "dependency_type": "embedded"
+            }]
+            }]
+
           loaders: |
             paper
             purpur
