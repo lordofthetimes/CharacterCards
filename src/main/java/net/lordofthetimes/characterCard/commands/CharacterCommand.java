@@ -10,6 +10,8 @@ import net.lordofthetimes.characterCard.CharacterCard;
 import net.lordofthetimes.characterCard.database.DatabaseManager;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.StringArgument;
+import net.lordofthetimes.characterCard.hooks.TANHook;
+import net.lordofthetimes.characterCard.hooks.TownyHook;
 import net.lordofthetimes.characterCard.utils.MessageSender;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -42,8 +44,14 @@ public class CharacterCommand {
     public String religionMessage;
     public String descriptionMessage;
     public String loreMessage;
-    public String townMessage;
-    public String nationsMessage;
+    public String landsTownsMessage;
+    public String landsNationsMessage;
+    public String townyTownMessage;
+    public String townyNationMessage;
+
+    public String tanTownMessage;
+    public String tanRegionMessage;
+    public String tanNationMessage;
 
     public CharacterCommand(CharacterCard plugin, DatabaseManager db) {
         this.plugin = plugin;
@@ -405,12 +413,38 @@ public class CharacterCommand {
 
             if (plugin.lands.townsCard) {
                 String townsNames = String.join(", ", plugin.lands.getLandsNames(target.getUniqueId()));
-                page1String += townMessage.replace("<%towns%>", townsNames);
+                page1String += landsTownsMessage.replace("<%towns%>", townsNames);
             }
 
             if (plugin.lands.townsCard) {
                 String nationsNames = String.join(", ", plugin.lands.getNationNames(target.getUniqueId()));
-                page1String += nationsMessage.replace("<%nations%>", nationsNames);
+                page1String += landsNationsMessage.replace("<%nations%>", nationsNames);
+            }
+        }
+
+        if(plugin.townyEnabled){
+
+            if(config.getBoolean("towny.town")){
+                page1String += townyTownMessage.replace("<%town%>", TownyHook.getTown(target.getPlayer()));
+            }
+
+            if(config.getBoolean("towny.nation")){
+                page1String += townyNationMessage.replace("<%nation%>", TownyHook.getNation(target.getPlayer()));
+            }
+        }
+
+        if(plugin.tanEnabled){
+
+            if(config.getBoolean("tan.town")){
+                page1String += tanTownMessage.replace("<%town%>", TANHook.getTown(target.getPlayer()));
+            }
+
+            if(config.getBoolean("tan.region")){
+                page1String += tanRegionMessage.replace("<%region%>", TANHook.getRegion(target.getPlayer()));
+            }
+
+            if(config.getBoolean("tan.nation")){
+                page1String += tanNationMessage.replace("<%nation%>", TANHook.getNation(target.getPlayer()));
             }
         }
 
@@ -489,12 +523,38 @@ public class CharacterCommand {
 
             if(plugin.lands.townsCard){
                 String townsNames = String.join(", ", plugin.lands.getLandsNames(offlinePlayer.getUniqueId()));
-                part.add(townMessage.replace("<%towns%>",townsNames));
+                part.add(landsTownsMessage.replace("<%towns%>",townsNames));
             }
 
             if(plugin.lands.townsCard){
                 String nationsNames = String.join(", ", plugin.lands.getNationNames(offlinePlayer.getUniqueId()));
-                part.add(nationsMessage.replace("<%nations%>",nationsNames));
+                part.add(landsNationsMessage.replace("<%nations%>",nationsNames));
+            }
+        }
+
+        if(plugin.townyEnabled){
+
+            if(config.getBoolean("towny.town")){
+                part.add(townyTownMessage.replace("<%town%>",TownyHook.getTown(offlinePlayer.getPlayer())));
+            }
+
+            if(config.getBoolean("towny.nation")){
+                part.add(townyNationMessage.replace("<%nation%>",TownyHook.getNation(offlinePlayer.getPlayer())));
+            }
+        }
+
+        if(plugin.tanEnabled){
+
+            if(config.getBoolean("tan.town")){
+                part.add(tanTownMessage.replace("<%town%>", TANHook.getTown(offlinePlayer.getPlayer())));
+            }
+
+            if(config.getBoolean("tan.region")){
+                part.add(tanRegionMessage.replace("<%region%>", TANHook.getRegion(offlinePlayer.getPlayer())));
+            }
+
+            if(config.getBoolean("tan.nation")){
+                part.add(tanNationMessage.replace("<%nation%>", TANHook.getNation(offlinePlayer.getPlayer())));
             }
         }
 
@@ -628,11 +688,13 @@ public class CharacterCommand {
         this.religionMessage = plugin.config.getString("religion.message");
         this.descriptionMessage = plugin.config.getString("description.message");
         this.loreMessage = plugin.config.getString("lore.message");
-        this.townMessage = plugin.config.getString("lands.townsMessage");
-        this.nationsMessage = plugin.config.getString("lands.nationsMessage");
-
-
-
+        this.landsTownsMessage = plugin.config.getString("lands.townsMessage");
+        this.landsNationsMessage = plugin.config.getString("lands.nationsMessage");
+        this.townyTownMessage = plugin.config.getString("towny.townMessage");
+        this.townyNationMessage = plugin.config.getString("towny.nationMessage");
+        this.tanTownMessage = plugin.config.getString("tan.townMessage");
+        this.tanRegionMessage = plugin.config.getString("tan.regionMessage");
+        this.tanNationMessage = plugin.config.getString("tan.nationMessage");
     }
 
 }

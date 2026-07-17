@@ -41,6 +41,8 @@ public final class CharacterCard extends JavaPlugin {
     public boolean landsEnabled = false;
     public boolean papiEnabled = false;
     public boolean essentialsXEnabled = false;
+    public boolean townyEnabled = false;
+    public boolean tanEnabled = false;
 
     public LandsHook lands;
     public CharacterCardPlaceholderExpansion papi;
@@ -102,6 +104,16 @@ public final class CharacterCard extends JavaPlugin {
         if (getServer().getPluginManager().getPlugin("Lands") != null && config.getBoolean("lands.enabled")) {
             logger.logInfo("Lands detected, support enabled!");
             enableLandsSupport();
+        }
+
+        if (getServer().getPluginManager().getPlugin("Towny") != null && config.getBoolean("towny.enabled")) {
+            logger.logInfo("Towny detected, support enabled!");
+            townyEnabled = true;
+        }
+
+        if (getServer().getPluginManager().getPlugin("TownsAndNations") != null && config.getBoolean("tan.enabled")) {
+            logger.logInfo("TownsAndNations detected, support enabled!");
+            tanEnabled = true;
         }
 
         if (getServer().getPluginManager().getPlugin("Essentials") != null && config.getBoolean("essentials.enabled")) {

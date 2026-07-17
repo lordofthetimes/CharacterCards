@@ -1,2 +1,2 @@
-- added /charactercard-reload command (permission : charactercard.reload)
-- Remember! Disabling commands requires full server restart!
+- added support for Towny
+- added support for TownsAndNations

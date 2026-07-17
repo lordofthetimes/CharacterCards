@@ -124,7 +124,7 @@ lands:
   # This will make character card include lands info for towns
   towns: true
 
-  # This will make character card include lands info for towns
+  # This will make character card include lands info for nations
   nations: true
 
   # Message string that will be used, use <%towns%>for a placeholder
@@ -132,6 +132,50 @@ lands:
 
   # Message string that will be used, use <%nations%> for a placeholder
   nationsMessage: "\n<dark_blue><bold>Nation(s):</bold> <%nations%></dark_blue>"
+
+# ╔                                              ╗
+# ║             TOWNY COMPATIBILITY              ║
+# ╚                                              ╝
+towny:
+  # Enable towny support [default - true]
+  enabled: true
+
+  # This will make character card include towny info for town
+  town: true
+
+  # This will make character card include towny info for nation
+  nation: true
+
+  # Message string that will be used, use <%town%>for a placeholder
+  townMessage: "\n<aqua><bold>Town:</bold> <%town%></aqua>"
+
+  # Message string that will be used, use <%nation%> for a placeholder
+  nationMessage: "\n<dark_blue><bold>Nation:</bold> <%nation%></dark_blue>"
+
+# ╔                                              ╗
+# ║        TOWNS & NATIONS COMPATIBILITY         ║
+# ╚                                              ╝
+tan:
+  # Enable tan support [default - true]
+  enabled: true
+
+  # This will make character card include tan info for town
+  town: true
+
+  # This will make character card include tan info for region
+  region: true
+
+  # This will make character card include tan info for nation
+  nation: true
+
+  # Message string that will be used, use <%town%>for a placeholder
+  townMessage: "\n<aqua><bold>Town:</bold> <%town%></aqua>"
+
+  # Message string that will be used, use <%region%>for a placeholder
+  regionMessage: "\n<aqua><bold>Region:</bold> <%region%></aqua>"
+
+  # Message string that will be used, use <%nation%> for a placeholder
+  nationMessage: "\n<dark_blue><bold>Nation:</bold> <%nation%></dark_blue>"
 
 # ╔                                              ╗
 # ║                   PAPI COMPATIBILITY         ║
@@ -188,4 +232,4 @@ database:
 
 
 # DO NOT CHANGE VERSION - ESSENTIAL FOR CONFIG UPDATES
-config-version: 8
+config-version: 9
