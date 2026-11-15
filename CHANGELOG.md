@@ -1,2 +1,1 @@
-- added support for Towny
-- added support for TownsAndNations
+- added support for paper 26.3
